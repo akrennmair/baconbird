@@ -1,20 +1,12 @@
 package BaconBird::Model;
 use Moose;
 
+use Data::Dumper;
+
 use constant CONSUMER_KEY => "HNWGxf3exkB1mQGpM83PWw";
 use constant CONSUMER_SECRET => "dcQsVwycEa6vNCMO0ljbzZfzloqBXcRDMYXRo1bsN7k";
 
 use Net::Twitter;
-
-has 'access_token' => (
-	is => 'rw',
-	isa => 'Str',
-);
-
-has 'access_token_secret' => (
-	is => 'rw',
-	isa => 'Str',
-);
 
 has 'ctrl' => (
 	is => 'rw',
@@ -22,9 +14,9 @@ has 'ctrl' => (
 );
 
 has 'nt' => (
-	is => 'rw',
+	is => 'ro',
 	isa => 'Net::Twitter',
-	default => sub { my $self = shift; return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET); },
+	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET); },
 );
 
 has 'user_id' => (
@@ -35,6 +27,12 @@ has 'user_id' => (
 has 'screen_name' => (
 	is => 'rw',
 	isa => 'Str',
+);
+
+has 'home_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
 );
 
 sub login {
@@ -53,10 +51,18 @@ sub login {
 	}
 }
 
-sub home_timeline {
+sub reload_home_timeline {
 	my $self = shift;
+	my $id = -1;
 
-	return $self->nt->home_timeline;
+	if (defined($self->home_timeline) && scalar(@{$self->home_timeline}) > 0) {
+		$id = $self->home_timeline->[0]->{id};
+	}
+	my $newdata = $self->nt->home_timeline({ since_id => $id, count => 50 });
+	my $olddata = $self->home_timeline;
+	my @new_timeline = ( @$newdata, @$olddata );
+
+	$self->home_timeline(\@new_timeline);
 }
 
 no Moose;

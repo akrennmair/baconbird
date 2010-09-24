@@ -46,6 +46,8 @@ sub next_event {
 
 	if ($e eq "q") {
 		$self->ctrl->quit(1);
+	} elsif ($e eq "r") {
+		$self->ctrl->reload_home_timeline();
 	} else {
 		$self->status_msg("input: $e");
 	}

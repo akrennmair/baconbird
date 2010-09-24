@@ -36,9 +36,7 @@ sub BUILD {
 sub run {
 	my $self = shift;
 
-	$self->status_msg("Loading home timeline...");
-	$self->view->set_timeline($self->model->home_timeline());
-	$self->status_msg("");
+	$self->reload_home_timeline;
 
 	while (!$self->quit) {
 		$self->view->next_event();
@@ -49,6 +47,14 @@ sub status_msg {
 	my $self = shift;
 	my ($msg) = @_;
 	$self->view->status_msg($msg);
+}
+
+sub reload_home_timeline {
+	my $self = shift;
+	$self->status_msg("Loading home timeline...");
+	$self->model->reload_home_timeline;
+	$self->view->set_timeline($self->model->home_timeline());
+	$self->status_msg("");
 }
 
 sub load_tokens {
