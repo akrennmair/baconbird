@@ -14,11 +14,9 @@ my $version = "0.1";
 my $ctrl = BaconBird::Controller->new();
 my $model = BaconBird::Model->new(ctrl => $ctrl);
 my $view = BaconBird::View->new(ctrl => $ctrl);
+
 $ctrl->model($model);
 $ctrl->view($view);
-
-$ctrl->init;
-$view->init;
 
 $ctrl->login;
 $ctrl->run;

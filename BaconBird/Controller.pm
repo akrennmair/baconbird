@@ -28,7 +28,7 @@ has 'quit' => (
 	isa => 'Bool',
 );
 
-sub init {
+sub BUILD {
 	my $self = shift;
 	mkdir($self->configdir, 0755);
 }

@@ -8,7 +8,12 @@ has 'f' => (
 	isa => 'stfl::stfl_form',
 );
 
-sub init {
+has 'ctrl' => (
+	is => 'rw',
+	isa => 'BaconBird::Controller',
+);
+
+sub BUILD {
 	my $self = shift;
 
 	$self->f(stfl::create( <<"EOT" ));
@@ -40,7 +45,7 @@ sub next_event {
 	return if (!defined($e));
 
 	if ($e eq "q") {
-		$self->ctrl->quit("true");
+		$self->ctrl->quit(1);
 	} else {
 		$self->status_msg("input: $e");
 	}
