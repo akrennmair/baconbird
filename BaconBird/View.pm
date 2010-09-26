@@ -34,7 +34,7 @@ vbox
     label text:"q:Quit ... more help" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
-    label text[msg]:"foobar" .expand:h
+    label text[msg]:"" .expand:h
 EOT
 }
 
@@ -48,6 +48,14 @@ sub next_event {
 		$self->ctrl->quit(1);
 	} elsif ($e eq "r") {
 		$self->ctrl->reload_home_timeline();
+	} elsif ($e eq "ENTER") {
+		$self->set_input_field("Tweet: ");
+	} elsif ($e eq "cancel-input") {
+		$self->set_lastline;
+	} elsif ($e eq "end-input") {
+		my $tweet = $self->f->get("inputfield");
+		$self->set_lastline;
+		$self->ctrl->post_update($tweet);
 	} else {
 		$self->status_msg("input: $e");
 	}
@@ -59,6 +67,19 @@ sub status_msg {
 
 	$self->f->set("msg", $msg);
 	$self->f->run(-1);
+}
+
+sub set_lastline {
+	my $self = shift;
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label text[msg]:"" .expand:h}}');
+}
+
+sub set_input_field {
+	my $self = shift;
+	my ($label) = @_;
+
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:""}}');
+	$self->f->set_focus("tweetinput");
 }
 
 sub set_timeline {

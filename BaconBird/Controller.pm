@@ -92,6 +92,14 @@ sub login {
 	$self->model->login;
 }
 
+sub post_update {
+	my $self = shift;
+	my ($tweet) = @_;
+	$self->model->post_update($tweet);
+	$self->model->reload_home_timeline;
+	$self->view->set_timeline($self->model->home_timeline());
+}
+
 
 no Moose;
 1;

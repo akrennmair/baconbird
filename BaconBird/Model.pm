@@ -65,5 +65,12 @@ sub reload_home_timeline {
 	$self->home_timeline(\@new_timeline);
 }
 
+sub post_update {
+	my $self = shift;
+	my ($tweet) = @_;
+
+	$self->nt->update({ status => $tweet });
+}
+
 no Moose;
 1;
