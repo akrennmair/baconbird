@@ -44,7 +44,15 @@ sub run {
 
 	while (!$self->quit) {
 		$self->view->set_rate_limit($self->model->get_rate_limit);
-		$self->view->next_event();
+
+		eval {
+			$self->view->next_event();
+		};
+		if (my $err = $@) {
+			die $@ unless blessed($err) && $err->isa("Net::Twitter::Error");
+			$self->view->status_msg("Error: " . $err->error);
+		}
+
 		
 		if (time >= $ts) {
 			$self->model->reload_home_timeline;
@@ -82,7 +90,6 @@ sub load_tokens {
 sub save_tokens {
 	my $self = shift;
 	my ($access_token, $access_token_secret) = @_;
-	# TODO: implement
 	open(my $fh,">",$self->pinfile) or die "Error: couldn't open $self->pinfile: $!\n";
 	print $fh "$access_token\n$access_token_secret\n";
 	close($fh);
@@ -111,6 +118,13 @@ sub post_update {
 	$self->view->set_timeline($self->model->home_timeline());
 }
 
+sub retweet {
+	my $self = shift;
+	my ($tweetid) = @_;
+	$self->model->retweet($tweetid);
+	$self->model->reload_home_timeline;
+	$self->view->set_timeline($self->model->home_timeline());
+}
 
 no Moose;
 1;

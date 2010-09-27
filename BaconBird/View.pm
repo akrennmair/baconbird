@@ -3,6 +3,8 @@ use Moose;
 
 use stfl;
 
+use Data::Dumper;
+
 has 'f' => (
 	is => 'rw',
 	isa => 'stfl::stfl_form',
@@ -26,12 +28,12 @@ vbox
   list[tweets]
     style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
     .expand:vh
-    pos_name[tweetposname]:
+    pos_name[tweetid]:
     pos[tweetpos]:0
   vbox
     .expand:0
     .display:1
-    label text:"q:Quit ... more help" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text:"q:Quit ENTER:New Tweet ^R:Retweet" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
@@ -56,8 +58,12 @@ sub next_event {
 		my $tweet = $self->f->get("inputfield");
 		$self->set_lastline;
 		$self->ctrl->post_update($tweet);
-	} else {
-		$self->status_msg("input: $e");
+	} elsif ($e eq "^R") {
+		my $tweetid = $self->f->get("tweetid");
+		if (defined($tweetid) && $tweetid ne "") {
+			$self->ctrl->retweet($tweetid);
+			$self->status_msg("Retweeted.");
+		}
 	}
 }
 
@@ -90,7 +96,7 @@ sub set_timeline {
 
     foreach my $tweet (@$tl) {
       my $text = "@" . $tweet->{user}{screen_name} . ": " . $tweet->{text};
-      $list .= "{listitem text:" . stfl::quote($text) . "}";
+      $list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}
 
 	$list .= "}";

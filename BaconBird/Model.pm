@@ -80,8 +80,13 @@ sub get_rate_limit {
 sub get_wait_time {
 	my $self = shift;
 	my $ratio = $self->nt->until_rate(1.5);
-	print STDERR Dumper($ratio);
 	return $ratio;
+}
+
+sub retweet {
+	my $self = shift;
+	my ($id) = @_;
+	$self->nt->retweet($id);
 }
 
 no Moose;
