@@ -67,9 +67,11 @@ sub reload_home_timeline {
 
 sub post_update {
 	my $self = shift;
-	my ($tweet) = @_;
+	my ($tweet, $status_id) = @_;
 
-	$self->nt->update({ status => $tweet });
+	$status_id = -1 if !defined($status_id);
+
+	$self->nt->update({ status => $tweet, in_reply_to_status_id => $status_id });
 }
 
 sub get_rate_limit {
@@ -87,6 +89,16 @@ sub retweet {
 	my $self = shift;
 	my ($id) = @_;
 	$self->nt->retweet($id);
+}
+
+sub lookup_author {
+	my $self = shift;
+	my ($tweetid) = @_;
+	foreach my $status (@{$self->home_timeline}) {
+		print STDERR Dumper($status);
+		return $status->{user}{screen_name} if $status->{id} == $tweetid;
+	}
+	return "";
 }
 
 no Moose;

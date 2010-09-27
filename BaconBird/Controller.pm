@@ -112,8 +112,8 @@ sub login {
 
 sub post_update {
 	my $self = shift;
-	my ($tweet) = @_;
-	$self->model->post_update($tweet);
+	my ($tweet, $in_reply_to_status_id) = @_;
+	$self->model->post_update($tweet, $in_reply_to_status_id);
 	$self->model->reload_home_timeline;
 	$self->view->set_timeline($self->model->home_timeline());
 }
@@ -124,6 +124,12 @@ sub retweet {
 	$self->model->retweet($tweetid);
 	$self->model->reload_home_timeline;
 	$self->view->set_timeline($self->model->home_timeline());
+}
+
+sub lookup_author {
+	my $self = shift;
+	my ($tweetid) = @_;
+	return $self->model->lookup_author($tweetid);
 }
 
 no Moose;

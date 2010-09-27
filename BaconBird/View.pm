@@ -15,6 +15,10 @@ has 'ctrl' => (
 	isa => 'BaconBird::Controller',
 );
 
+has 'saved_status_id' => (
+	is => 'rw',
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -33,7 +37,7 @@ vbox
   vbox
     .expand:0
     .display:1
-    label text:"q:Quit ENTER:New Tweet ^R:Retweet" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
@@ -48,22 +52,26 @@ sub next_event {
 
 	if ($e eq "q") {
 		$self->ctrl->quit(1);
-	} elsif ($e eq "r") {
-		$self->ctrl->reload_home_timeline();
 	} elsif ($e eq "ENTER") {
 		$self->set_input_field("Tweet: ");
 	} elsif ($e eq "cancel-input") {
 		$self->set_lastline;
+		$self->saved_status_id(undef);
 	} elsif ($e eq "end-input") {
 		my $tweet = $self->f->get("inputfield");
 		$self->set_lastline;
-		$self->ctrl->post_update($tweet);
+		$self->ctrl->post_update($tweet, $self->saved_status_id);
+		$self->saved_status_id(undef);
 	} elsif ($e eq "^R") {
 		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
 			$self->ctrl->retweet($tweetid);
 			$self->status_msg("Retweeted.");
 		}
+	} elsif ($e eq "r") {
+		$self->do_reply(0);
+	} elsif ($e eq "R") {
+		$self->do_reply(1);
 	}
 }
 
@@ -82,9 +90,12 @@ sub set_lastline {
 
 sub set_input_field {
 	my $self = shift;
-	my ($label) = @_;
+	my ($label, $default_text) = @_;
 
-	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:""}}');
+	$default_text = "" if !defined($default_text);
+	my $pos = length($default_text);
+
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '}}');
 	$self->f->set_focus("tweetinput");
 }
 
@@ -108,6 +119,22 @@ sub set_rate_limit {
 	my $self = shift;
 	my ($remaining, $limit ) = @_;
 	$self->f->set("rateinfo", "$remaining/$limit");
+}
+
+sub do_reply {
+	my $self = shift;
+	my ($is_public) = @_;
+
+	my $tweetid = $self->f->get("tweetid");
+
+	if (defined($tweetid) && $tweetid ne "") {
+		my $public = "";
+		$public = "." if $is_public;
+
+		$self->saved_status_id($tweetid);
+		my $username = $self->ctrl->lookup_author($tweetid);
+		$self->set_input_field("Reply: ", $public . '@' . $username . ' ');
+	}
 }
 
 
