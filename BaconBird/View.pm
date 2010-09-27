@@ -41,7 +41,7 @@ EOT
 sub next_event {
 	my $self = shift;
 
-	my $e = $self->f->run(0);
+	my $e = $self->f->run(10000);
 	return if (!defined($e));
 
 	if ($e eq "q") {

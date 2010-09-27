@@ -77,5 +77,12 @@ sub get_rate_limit {
 	return ($self->nt->rate_remaining, $self->nt->rate_limit);
 }
 
+sub get_wait_time {
+	my $self = shift;
+	my $ratio = $self->nt->until_rate(1.5);
+	print STDERR Dumper($ratio);
+	return $ratio;
+}
+
 no Moose;
 1;

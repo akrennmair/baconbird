@@ -14,7 +14,6 @@ has 'view' => (
 has 'pinfile' => (
 	is => 'rw',
 	isa => 'Str',
-	default => $ENV{'HOME'} . "/.baconbird/authcode",
 );
 
 has 'configdir' => (
@@ -28,19 +27,30 @@ has 'quit' => (
 	isa => 'Bool',
 );
 
+use constant DEFAULT_WAIT_TIME => 60;
+
 sub BUILD {
 	my $self = shift;
 	mkdir($self->configdir, 0755);
+	$self->pinfile($self->configdir . "/authcode");
 }
 
 sub run {
 	my $self = shift;
+	my $ts = time + DEFAULT_WAIT_TIME; #$self->model->get_wait_time;
 
+	$self->view->set_rate_limit($self->model->get_rate_limit);
 	$self->reload_home_timeline;
 
 	while (!$self->quit) {
 		$self->view->set_rate_limit($self->model->get_rate_limit);
 		$self->view->next_event();
+		
+		if (time >= $ts) {
+			$self->model->reload_home_timeline;
+			$self->view->set_timeline($self->model->home_timeline());
+			$ts = time + DEFAULT_WAIT_TIME; #$self->model->get_wait_time;
+		}
 	}
 }
 
