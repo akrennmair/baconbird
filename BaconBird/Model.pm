@@ -16,7 +16,7 @@ has 'ctrl' => (
 has 'nt' => (
 	is => 'ro',
 	isa => 'Net::Twitter',
-	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET); },
+	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects RateLimit/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET); },
 );
 
 has 'user_id' => (
@@ -70,6 +70,11 @@ sub post_update {
 	my ($tweet) = @_;
 
 	$self->nt->update({ status => $tweet });
+}
+
+sub get_rate_limit {
+	my $self = shift;
+	return ($self->nt->rate_remaining, $self->nt->rate_limit);
 }
 
 no Moose;

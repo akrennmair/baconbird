@@ -39,6 +39,7 @@ sub run {
 	$self->reload_home_timeline;
 
 	while (!$self->quit) {
+		$self->view->set_rate_limit($self->model->get_rate_limit);
 		$self->view->next_event();
 	}
 }

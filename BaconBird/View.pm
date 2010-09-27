@@ -98,6 +98,12 @@ sub set_timeline {
 	$self->f->modify("tweets", "replace_inner", $list);
 }
 
+sub set_rate_limit {
+	my $self = shift;
+	my ($remaining, $limit ) = @_;
+	$self->f->set("rateinfo", "$remaining/$limit");
+}
+
 
 no Moose;
 1;
