@@ -123,7 +123,7 @@ sub post_update {
 
 sub get_rate_limit {
 	my $self = shift;
-	return ($self->nt->rate_remaining, $self->nt->rate_limit);
+	return ($self->nt->rate_remaining, $self->nt->rate_limit, $self->nt->rate_reset - time);
 }
 
 sub get_wait_time {

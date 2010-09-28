@@ -135,8 +135,9 @@ sub set_timeline {
 
 sub set_rate_limit {
 	my $self = shift;
-	my ($remaining, $limit ) = @_;
-	$self->f->set("rateinfo", "$remaining/$limit");
+	my ($remaining, $limit, $s_rem ) = @_;
+	my $m_rem = int($s_rem / 60);
+	$self->f->set("rateinfo", "Next reset: $m_rem min $remaining/$limit");
 }
 
 sub do_reply {
