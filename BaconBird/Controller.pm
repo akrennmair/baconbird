@@ -134,14 +134,15 @@ sub lookup_author {
 	return $self->model->lookup_author($tweetid);
 }
 
-sub get_home_timeline {
+sub get_timeline {
 	my $self = shift;
-	return $self->model->home_timeline;
+	return $self->model->get_timeline;
 }
 
-sub get_mentions {
+sub select_timeline {
 	my $self = shift;
-	return $self->model->mentions;
+	my ($timeline) = @_;
+	$self->model->select_timeline($timeline);
 }
 
 no Moose;

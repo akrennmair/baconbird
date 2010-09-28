@@ -3,8 +3,7 @@ use Moose;
 
 use stfl;
 
-use constant HOME_TIMELINE => 1;
-use constant MENTIONS => 2;
+use constant PROGRAM_VERSION => "0.1";
 
 use Data::Dumper;
 
@@ -22,11 +21,6 @@ has 'saved_status_id' => (
 	is => 'rw',
 );
 
-has 'current_timeline' => (
-	is => 'rw',
-	default => HOME_TIMELINE,
-);
-
 sub BUILD {
 	my $self = shift;
 
@@ -35,7 +29,8 @@ vbox
   hbox
     .expand:0
     \@style_normal:bg=blue,fg=white,attr=bold
-    label text:"[baconbird 0.1]" .expand:h
+    label text[program]:"" .expand:0
+    label text[current_view]:"" .expand:h
     label .tie:r text[rateinfo]:"-1/-1" .expand:0
   list[tweets]
     style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
@@ -50,6 +45,9 @@ vbox
     .expand:0
     label text[msg]:"" .expand:h
 EOT
+
+	$self->f->set("program", "[baconbird " . PROGRAM_VERSION . "] ");
+	$self->set_caption("home_timeline");
 }
 
 sub next_event {
@@ -81,10 +79,10 @@ sub next_event {
 	} elsif ($e eq "R") {
 		$self->do_reply(1);
 	} elsif ($e eq "h") {
-		$self->current_timeline(HOME_TIMELINE);
+		$self->select_timeline("home_timeline");
 		$self->get_timeline;
 	} elsif ($e eq "m") {
-		$self->current_timeline(MENTIONS);
+		$self->select_timeline("mentions");
 		$self->get_timeline;
 	}
 }
@@ -153,13 +151,21 @@ sub do_reply {
 
 sub get_timeline {
 	my $self = shift;
+	$self->set_timeline($self->ctrl->get_timeline);
+}
 
-	if ($self->current_timeline == HOME_TIMELINE) {
-		$self->set_timeline($self->ctrl->get_home_timeline);
-	} elsif ($self->current_timeline == MENTIONS) {
-		$self->set_timeline($self->ctrl->get_mentions);
-	}
-	# TODO: show which timeline we're on somewhere
+sub select_timeline {
+	my $self = shift;
+	my ($view) = @_;
+	$self->set_caption($view);
+	$self->ctrl->select_timeline($view);
+}
+
+sub set_caption {
+	my $self = shift;
+	my ($view) = @_;
+	my %caption = ( "home_timeline" => "Home Timeline", "mentions" => "Mentions" );
+	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 
 

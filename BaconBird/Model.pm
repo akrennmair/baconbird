@@ -43,6 +43,11 @@ has 'mentions' => (
 	default => sub { [ ] },
 );
 
+has 'current_timeline' => (
+	is => 'rw',
+	default => "home_timeline",
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
@@ -118,10 +123,28 @@ sub lookup_author {
 	my $self = shift;
 	my ($tweetid) = @_;
 	foreach my $status (@{$self->home_timeline}) {
-		print STDERR Dumper($status);
+		#print STDERR Dumper($status);
 		return $status->{user}{screen_name} if $status->{id} == $tweetid;
 	}
 	return "";
+}
+
+sub select_timeline {
+	my $self = shift;
+	my ($timeline) = @_;
+	$self->current_timeline($timeline);
+}
+
+sub get_timeline {
+	my $self = shift;
+	if ($self->current_timeline eq "home_timeline") {
+		return $self->home_timeline;
+	} elsif ($self->current_timeline eq "mentions") {
+		return $self->mentions;
+	} else {
+		# an unknown timeline type is a bug
+		return undef;
+	}
 }
 
 no Moose;
