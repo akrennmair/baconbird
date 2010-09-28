@@ -4,6 +4,7 @@ use Moose;
 use stfl;
 
 use constant PROGRAM_VERSION => "0.1";
+use constant TWITTER_MAX_LEN => 140;
 
 use Data::Dumper;
 
@@ -54,7 +55,15 @@ sub next_event {
 	my $self = shift;
 
 	my $e = $self->f->run(10000);
-	return if (!defined($e));
+
+	if (!defined($e)) {
+		if ($self->f->get_focus eq "tweetinput") {
+			$self->set_remaining($self->f->get("inputfield"));
+		}
+		return;
+	}
+
+	print STDERR Dumper($e);
 
 	if ($e eq "q") {
 		$self->ctrl->quit(1);
@@ -112,7 +121,10 @@ sub set_input_field {
 	$default_text = "" if !defined($default_text);
 	my $pos = length($default_text);
 
-	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '}}');
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
+
+	$self->set_remaining($default_text);
+
 	$self->f->set_focus("tweetinput");
 }
 
@@ -173,6 +185,20 @@ sub set_caption {
 	my ($view) = @_;
 	my %caption = ( "home_timeline" => "Home Timeline", "mentions" => "Mentions", "direct_messages" => "Direct Messages" );
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
+}
+
+sub set_remaining {
+	my $self = shift;
+	my ($text) = @_;
+	my $rem_len = TWITTER_MAX_LEN - length($text);
+	$self->f->set("remaining", sprintf("| %4d", $rem_len));
+	if ($rem_len > 15) {
+		$self->f->set("remaining_style", "fg=white,attr=bold");
+	} elsif ($rem_len >= 0) {
+		$self->f->set("remaining_style", "fg=yellow,attr=bold");
+	} else {
+		$self->f->set("remaining_style", "fg=red,attr=bold");
+	}
 }
 
 
