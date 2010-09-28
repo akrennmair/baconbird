@@ -27,7 +27,6 @@ has 'quit' => (
 	isa => 'Bool',
 );
 
-use constant DEFAULT_WAIT_TIME => 60;
 
 sub BUILD {
 	my $self = shift;
@@ -37,10 +36,10 @@ sub BUILD {
 
 sub run {
 	my $self = shift;
-	my $ts = time + DEFAULT_WAIT_TIME; #$self->model->get_wait_time;
+	my $ts = time + $self->model->get_wait_time;
 
 	$self->view->set_rate_limit($self->model->get_rate_limit);
-	$self->reload_home_timeline;
+	$self->reload_all;
 
 	while (!$self->quit) {
 		$self->view->set_rate_limit($self->model->get_rate_limit);
@@ -55,9 +54,8 @@ sub run {
 
 		
 		if (time >= $ts) {
-			$self->model->reload_home_timeline;
-			$self->view->set_timeline($self->model->home_timeline());
-			$ts = time + DEFAULT_WAIT_TIME; #$self->model->get_wait_time;
+			$self->reload_all_and_update_view;
+			$ts = time + $self->model->get_wait_time;
 		}
 	}
 }
@@ -68,12 +66,18 @@ sub status_msg {
 	$self->view->status_msg($msg);
 }
 
-sub reload_home_timeline {
+sub reload_all {
 	my $self = shift;
-	$self->status_msg("Loading home timeline...");
-	$self->model->reload_home_timeline;
-	$self->view->set_timeline($self->model->home_timeline());
+	$self->status_msg("Loading...");
+	$self->reload_all_and_update_view;
 	$self->status_msg("");
+}
+
+sub reload_all_and_update_view {
+	my $self = shift;
+	$self->model->reload_home_timeline;
+	$self->model->reload_mentions;
+	$self->view->get_timeline;
 }
 
 sub load_tokens {
@@ -114,22 +118,30 @@ sub post_update {
 	my $self = shift;
 	my ($tweet, $in_reply_to_status_id) = @_;
 	$self->model->post_update($tweet, $in_reply_to_status_id);
-	$self->model->reload_home_timeline;
-	$self->view->set_timeline($self->model->home_timeline());
+	$self->reload_all_and_update_view;
 }
 
 sub retweet {
 	my $self = shift;
 	my ($tweetid) = @_;
 	$self->model->retweet($tweetid);
-	$self->model->reload_home_timeline;
-	$self->view->set_timeline($self->model->home_timeline());
+	$self->reload_all_and_update_view;
 }
 
 sub lookup_author {
 	my $self = shift;
 	my ($tweetid) = @_;
 	return $self->model->lookup_author($tweetid);
+}
+
+sub get_home_timeline {
+	my $self = shift;
+	return $self->model->home_timeline;
+}
+
+sub get_mentions {
+	my $self = shift;
+	return $self->model->mentions;
 }
 
 no Moose;

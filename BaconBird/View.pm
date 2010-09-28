@@ -3,6 +3,9 @@ use Moose;
 
 use stfl;
 
+use constant HOME_TIMELINE => 1;
+use constant MENTIONS => 2;
+
 use Data::Dumper;
 
 has 'f' => (
@@ -17,6 +20,11 @@ has 'ctrl' => (
 
 has 'saved_status_id' => (
 	is => 'rw',
+);
+
+has 'current_timeline' => (
+	is => 'rw',
+	default => HOME_TIMELINE,
 );
 
 sub BUILD {
@@ -72,6 +80,12 @@ sub next_event {
 		$self->do_reply(0);
 	} elsif ($e eq "R") {
 		$self->do_reply(1);
+	} elsif ($e eq "h") {
+		$self->current_timeline(HOME_TIMELINE);
+		$self->get_timeline;
+	} elsif ($e eq "m") {
+		$self->current_timeline(MENTIONS);
+		$self->get_timeline;
 	}
 }
 
@@ -135,6 +149,17 @@ sub do_reply {
 		my $username = $self->ctrl->lookup_author($tweetid);
 		$self->set_input_field("Reply: ", $public . '@' . $username . ' ');
 	}
+}
+
+sub get_timeline {
+	my $self = shift;
+
+	if ($self->current_timeline == HOME_TIMELINE) {
+		$self->set_timeline($self->ctrl->get_home_timeline);
+	} elsif ($self->current_timeline == MENTIONS) {
+		$self->set_timeline($self->ctrl->get_mentions);
+	}
+	# TODO: show which timeline we're on somewhere
 }
 
 

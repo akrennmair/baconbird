@@ -6,6 +6,8 @@ use Data::Dumper;
 use constant CONSUMER_KEY => "HNWGxf3exkB1mQGpM83PWw";
 use constant CONSUMER_SECRET => "dcQsVwycEa6vNCMO0ljbzZfzloqBXcRDMYXRo1bsN7k";
 
+use constant DEFAULT_WAIT_TIME => 60;
+
 use Net::Twitter;
 
 has 'ctrl' => (
@@ -30,6 +32,12 @@ has 'screen_name' => (
 );
 
 has 'home_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
+has 'mentions' => (
 	is => 'rw',
 	isa => 'ArrayRef',
 	default => sub { [ ] },
@@ -65,6 +73,20 @@ sub reload_home_timeline {
 	$self->home_timeline(\@new_timeline);
 }
 
+sub reload_mentions {
+	my $self = shift;
+	my $id = -1;
+	if (defined($self->mentions) && scalar(@{$self->mentions}) > 0) {
+		$id = $self->mentions->[0]->{id};
+	}
+
+	my $newdata = $self->nt->mentions({ since_id => $id, count => 50 });
+	my $olddata = $self->mentions;
+	my @new_mentions = ( @$newdata, @$olddata );
+
+	$self->mentions(\@new_mentions);
+}
+
 sub post_update {
 	my $self = shift;
 	my ($tweet, $status_id) = @_;
@@ -81,8 +103,9 @@ sub get_rate_limit {
 
 sub get_wait_time {
 	my $self = shift;
-	my $ratio = $self->nt->until_rate(1.5);
-	return $ratio;
+	#my $ratio = $self->nt->until_rate(1.5);
+	#return $ratio;
+	return DEFAULT_WAIT_TIME;
 }
 
 sub retweet {
