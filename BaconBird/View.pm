@@ -66,7 +66,9 @@ sub next_event {
 	} elsif ($e eq "end-input") {
 		my $tweet = $self->f->get("inputfield");
 		$self->set_lastline;
+		$self->status_msg("Posting tweet...");
 		$self->ctrl->post_update($tweet, $self->saved_status_id);
+		$self->status_msg("");
 		$self->saved_status_id(undef);
 	} elsif ($e eq "^R") {
 		my $tweetid = $self->f->get("tweetid");
