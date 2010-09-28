@@ -9,8 +9,6 @@ use BaconBird::Controller;
 use BaconBird::Model;
 use BaconBird::View;
 
-my $version = "0.1";
-
 my $ctrl = BaconBird::Controller->new();
 my $model = BaconBird::Model->new(ctrl => $ctrl);
 my $view = BaconBird::View->new(ctrl => $ctrl);
