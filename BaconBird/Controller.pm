@@ -42,20 +42,18 @@ sub run {
 	$self->reload_all;
 
 	while (!$self->quit) {
-		$self->view->set_rate_limit($self->model->get_rate_limit);
-
 		eval {
+			$self->view->set_rate_limit($self->model->get_rate_limit);
 			$self->view->next_event();
+
+			if (time >= $ts) {
+				$self->reload_all_and_update_view;
+				$ts = time + $self->model->get_wait_time;
+			}
 		};
 		if (my $err = $@) {
 			die $@ unless blessed($err) && $err->isa("Net::Twitter::Error");
 			$self->view->status_msg("Error: " . $err->error);
-		}
-
-		
-		if (time >= $ts) {
-			$self->reload_all_and_update_view;
-			$ts = time + $self->model->get_wait_time;
 		}
 	}
 }
