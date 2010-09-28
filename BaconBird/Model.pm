@@ -77,11 +77,17 @@ sub reload_home_timeline {
 	if (defined($self->home_timeline) && scalar(@{$self->home_timeline}) > 0) {
 		$id = $self->home_timeline->[0]->{id};
 	}
-	my $newdata = $self->nt->home_timeline({ since_id => $id, count => 50 });
-	my $olddata = $self->home_timeline;
-	my @new_timeline = ( @$newdata, @$olddata );
 
-	$self->home_timeline(\@new_timeline);
+	eval {
+		my $newdata = $self->nt->home_timeline({ since_id => $id, count => 50 });
+		my $olddata = $self->home_timeline;
+		my @new_timeline = ( @$newdata, @$olddata );
+
+		$self->home_timeline(\@new_timeline);
+	};
+	if (my $err = $@) {
+		die "Reloading home timeline failed: " . $err->error . "\n";
+	}
 }
 
 sub reload_mentions {
@@ -91,11 +97,15 @@ sub reload_mentions {
 		$id = $self->mentions->[0]->{id};
 	}
 
-	my $newdata = $self->nt->mentions({ since_id => $id, count => 50 });
-	my $olddata = $self->mentions;
-	my @new_mentions = ( @$newdata, @$olddata );
-
-	$self->mentions(\@new_mentions);
+	eval {
+		my $newdata = $self->nt->mentions({ since_id => $id, count => 50 });
+		my $olddata = $self->mentions;
+		my @new_mentions = ( @$newdata, @$olddata );
+		$self->mentions(\@new_mentions);
+	};
+	if (my $err = $@) {
+		die "Reloading mentions failed: " . $err->error . "\n";
+	}
 }
 
 sub reload_direct_messages {
@@ -105,11 +115,16 @@ sub reload_direct_messages {
 		$id = $self->direct_messages->[0]->{id};
 	}
 
-	my $newdata = $self->nt->direct_messages({ since_id => $id, count => 50 });
-	my $olddata = $self->direct_messages;
-	my @new_dms = ( @$newdata, @$olddata );
+	eval {
+		my $newdata = $self->nt->direct_messages({ since_id => $id, count => 50 });
+		my $olddata = $self->direct_messages;
+		my @new_dms = ( @$newdata, @$olddata );
+		$self->direct_messages(\@new_dms);
+	};
+	if (my $err = $@) {
+		die "Reloading direct messages failed: " . $err->error . "\n";
+	}
 
-	$self->direct_messages(\@new_dms);
 }
 
 sub post_update {
@@ -118,7 +133,12 @@ sub post_update {
 
 	$status_id = -1 if !defined($status_id);
 
-	$self->nt->update({ status => $tweet, in_reply_to_status_id => $status_id });
+	eval {
+		$self->nt->update({ status => $tweet, in_reply_to_status_id => $status_id });
+	};
+	if (my $err = $@) {
+		die "Posting update failed: " . $err->error . "\n";
+	}
 }
 
 sub get_rate_limit {
@@ -136,7 +156,17 @@ sub get_wait_time {
 sub retweet {
 	my $self = shift;
 	my ($id) = @_;
-	$self->nt->retweet($id);
+
+	if ($self->current_timeline eq "direct_messages") {
+		die "you can't retweet a direct message.\n";
+	}
+
+	eval {
+		$self->nt->retweet($id);
+	};
+	if (my $err = $@) {
+		die "Retweet failed: " . $err->error . "\n";
+	}
 }
 
 sub lookup_author {

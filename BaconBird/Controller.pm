@@ -52,8 +52,7 @@ sub run {
 			}
 		};
 		if (my $err = $@) {
-			die $@ unless blessed($err) && $err->isa("Net::Twitter::Error");
-			$self->view->status_msg("Error: " . $err->error);
+			$self->view->status_msg("Error: $err");
 		}
 	}
 }
