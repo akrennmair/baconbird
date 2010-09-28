@@ -8,6 +8,10 @@ use constant CONSUMER_SECRET => "dcQsVwycEa6vNCMO0ljbzZfzloqBXcRDMYXRo1bsN7k";
 
 use constant DEFAULT_WAIT_TIME => 60;
 
+use constant HOME_TIMELINE => 1;
+use constant MENTIONS => 2;
+use constant DIRECT_MESSAGES => 3;
+
 use Net::Twitter;
 
 has 'ctrl' => (
@@ -51,7 +55,25 @@ has 'direct_messages' => (
 
 has 'current_timeline' => (
 	is => 'rw',
-	default => "home_timeline",
+	default => HOME_TIMELINE,
+);
+
+has 'home_timeline_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
+has 'direct_messages_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
+has 'mentions_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
 );
 
 sub login {
@@ -67,6 +89,18 @@ sub login {
 		$self->ctrl->save_tokens($new_at, $new_ats);
 		$self->user_id($user_id);
 		$self->screen_name($screen_name);
+	}
+}
+
+sub reload_all {
+	my $self = shift;
+	my $tl = $self->current_timeline;
+	if ($tl == HOME_TIMELINE) {
+		$self->reload_home_timeline;
+	} elsif ($tl == DIRECT_MESSAGES) {
+		$self->reload_direct_messages;
+	} elsif ($tl == MENTIONS) {
+		$self->reload_mentions;
 	}
 }
 
@@ -88,6 +122,7 @@ sub reload_home_timeline {
 	if (my $err = $@) {
 		die "Reloading home timeline failed: " . $err->error . "\n";
 	}
+	$self->home_timeline_ts(time);
 }
 
 sub reload_mentions {
@@ -106,6 +141,7 @@ sub reload_mentions {
 	if (my $err = $@) {
 		die "Reloading mentions failed: " . $err->error . "\n";
 	}
+	$self->mentions_ts(time);
 }
 
 sub reload_direct_messages {
@@ -124,7 +160,7 @@ sub reload_direct_messages {
 	if (my $err = $@) {
 		die "Reloading direct messages failed: " . $err->error . "\n";
 	}
-
+	$self->direct_messages_ts(time);
 }
 
 sub post_update {
@@ -157,7 +193,7 @@ sub retweet {
 	my $self = shift;
 	my ($id) = @_;
 
-	if ($self->current_timeline eq "direct_messages") {
+	if ($self->current_timeline == DIRECT_MESSAGES) {
 		die "you can't retweet a direct message.\n";
 	}
 
@@ -183,15 +219,22 @@ sub select_timeline {
 	my $self = shift;
 	my ($timeline) = @_;
 	$self->current_timeline($timeline);
+	if ($timeline == HOME_TIMELINE) {
+		$self->reload_home_timeline if ($self->home_timeline_ts + DEFAULT_WAIT_TIME) < time;
+	} elsif ($timeline == DIRECT_MESSAGES) {
+		$self->reload_direct_messages if ($self->direct_messages_ts + DEFAULT_WAIT_TIME) < time;
+	} elsif ($timeline == MENTIONS) {
+		$self->reload_mentions if ($self->mentions_ts + DEFAULT_WAIT_TIME) < time;
+	}
 }
 
 sub get_timeline {
 	my $self = shift;
-	if ($self->current_timeline eq "home_timeline") {
+	if ($self->current_timeline == HOME_TIMELINE) {
 		return $self->home_timeline;
-	} elsif ($self->current_timeline eq "mentions") {
+	} elsif ($self->current_timeline == MENTIONS) {
 		return $self->mentions;
-	} elsif ($self->current_timeline eq "direct_messages") {
+	} elsif ($self->current_timeline == DIRECT_MESSAGES) {
 		return $self->direct_messages;
 	} else {
 		# an unknown timeline type is a bug

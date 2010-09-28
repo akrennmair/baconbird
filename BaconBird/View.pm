@@ -48,7 +48,7 @@ vbox
 EOT
 
 	$self->f->set("program", "[baconbird " . PROGRAM_VERSION . "] ");
-	$self->set_caption("home_timeline");
+	$self->set_caption(BaconBird::Model::HOME_TIMELINE);
 }
 
 sub next_event {
@@ -92,13 +92,13 @@ sub next_event {
 	} elsif ($e eq "R") {
 		$self->do_reply(1);
 	} elsif ($e eq "1") {
-		$self->select_timeline("home_timeline");
+		$self->select_timeline(BaconBird::Model::HOME_TIMELINE);
 		$self->get_timeline;
 	} elsif ($e eq "2") {
-		$self->select_timeline("mentions");
+		$self->select_timeline(BaconBird::Model::MENTIONS);
 		$self->get_timeline;
 	} elsif ($e eq "3") {
-		$self->select_timeline("direct_messages");
+		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
 		$self->get_timeline;
 	}
 }
@@ -185,7 +185,9 @@ sub select_timeline {
 sub set_caption {
 	my $self = shift;
 	my ($view) = @_;
-	my %caption = ( "home_timeline" => "Home Timeline", "mentions" => "Mentions", "direct_messages" => "Direct Messages" );
+	my %caption = ( BaconBird::Model::HOME_TIMELINE => "Home Timeline", 
+					BaconBird::Model::MENTIONS => "Mentions", 
+					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages" );
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 

@@ -72,9 +72,7 @@ sub reload_all {
 
 sub reload_all_and_update_view {
 	my $self = shift;
-	$self->model->reload_home_timeline;
-	$self->model->reload_mentions;
-	$self->model->reload_direct_messages;
+	$self->model->reload_all;
 	$self->view->get_timeline;
 }
 
