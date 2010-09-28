@@ -40,7 +40,7 @@ vbox
   vbox
     .expand:0
     .display:1
-    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply 1:Home Timeline 2:Mentions 3:Direct Messages" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
@@ -78,11 +78,14 @@ sub next_event {
 		$self->do_reply(0);
 	} elsif ($e eq "R") {
 		$self->do_reply(1);
-	} elsif ($e eq "h") {
+	} elsif ($e eq "1") {
 		$self->select_timeline("home_timeline");
 		$self->get_timeline;
-	} elsif ($e eq "m") {
+	} elsif ($e eq "2") {
 		$self->select_timeline("mentions");
+		$self->get_timeline;
+	} elsif ($e eq "3") {
+		$self->select_timeline("direct_messages");
 		$self->get_timeline;
 	}
 }
@@ -117,9 +120,10 @@ sub set_timeline {
 
 	my $list = "{list ";
 
-    foreach my $tweet (@$tl) {
-      my $text = "@" . $tweet->{user}{screen_name} . ": " . $tweet->{text};
-      $list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
+	foreach my $tweet (@$tl) {
+		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name};
+		my $text = "@" . $username . ": " . $tweet->{text};
+		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}
 
 	$list .= "}";
@@ -164,7 +168,7 @@ sub select_timeline {
 sub set_caption {
 	my $self = shift;
 	my ($view) = @_;
-	my %caption = ( "home_timeline" => "Home Timeline", "mentions" => "Mentions" );
+	my %caption = ( "home_timeline" => "Home Timeline", "mentions" => "Mentions", "direct_messages" => "Direct Messages" );
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 

@@ -43,6 +43,12 @@ has 'mentions' => (
 	default => sub { [ ] },
 );
 
+has 'direct_messages' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
 has 'current_timeline' => (
 	is => 'rw',
 	default => "home_timeline",
@@ -90,6 +96,20 @@ sub reload_mentions {
 	my @new_mentions = ( @$newdata, @$olddata );
 
 	$self->mentions(\@new_mentions);
+}
+
+sub reload_direct_messages {
+	my $self = shift;
+	my $id = -1;
+	if (defined($self->direct_messages) && scalar(@{$self->direct_messages}) > 0) {
+		$id = $self->direct_messages->[0]->{id};
+	}
+
+	my $newdata = $self->nt->direct_messages({ since_id => $id, count => 50 });
+	my $olddata = $self->direct_messages;
+	my @new_dms = ( @$newdata, @$olddata );
+
+	$self->direct_messages(\@new_dms);
 }
 
 sub post_update {
@@ -141,6 +161,8 @@ sub get_timeline {
 		return $self->home_timeline;
 	} elsif ($self->current_timeline eq "mentions") {
 		return $self->mentions;
+	} elsif ($self->current_timeline eq "direct_messages") {
+		return $self->direct_messages;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
