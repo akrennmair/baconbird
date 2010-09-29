@@ -63,8 +63,6 @@ sub next_event {
 		return;
 	}
 
-	print STDERR Dumper($e);
-
 	if ($e eq "q") {
 		$self->ctrl->quit(1);
 	} elsif ($e eq "ENTER") {
