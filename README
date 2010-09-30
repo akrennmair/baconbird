@@ -1,0 +1,39 @@
+README for baconbird
+====================
+Andreas Krennmair <ak@synflood.at>
+
+Introduction
+------------
+Baconbird is a Twitter client for text terminals.
+
+Downloading
+-----------
+
+You can download baconbird releases and the latest source code from this website:
+
+	http://github.com/akrennmair/baconbird
+
+Dependencies
+------------
+Baconbird depends on a number of software packages and libraries, which need to 
+be installed beofre baconbird can be used.
+
+- Perl (5.10 or newer): http://www.perl.org/
+- STFL (0.21 or newer): http://www.clifford.at/stfl/
+- Perl modules:
+	* Moose
+	* Net::Twitter
+	* WWW::Shorten
+	* URI::Find
+	* HTML::Strip
+
+Debian comes with ready-to-use packages for these dependencies.
+
+Contact
+-------
+Andreas Krennmair <ak@synflood.at>
+
+License
+-------
+Baconbird is licensed under the MIT/X Consortium License. See the file LICENSE
+for further details.
