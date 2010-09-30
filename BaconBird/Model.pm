@@ -76,6 +76,12 @@ has 'mentions_ts' => (
 	default => 0,
 );
 
+has 'all_messages' => (
+	is => 'rw',
+	isa => 'HashRef',
+	default => sub { { } },
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
@@ -117,6 +123,8 @@ sub reload_home_timeline {
 		my $olddata = $self->home_timeline;
 		my @new_timeline = ( @$newdata, @$olddata );
 
+		$self->add_new_messages($newdata);
+
 		$self->home_timeline(\@new_timeline);
 	};
 	if (my $err = $@) {
@@ -136,6 +144,9 @@ sub reload_mentions {
 		my $newdata = $self->nt->mentions({ since_id => $id, count => 50 });
 		my $olddata = $self->mentions;
 		my @new_mentions = ( @$newdata, @$olddata );
+
+		$self->add_new_messages($newdata);
+
 		$self->mentions(\@new_mentions);
 	};
 	if (my $err = $@) {
@@ -208,10 +219,8 @@ sub retweet {
 sub lookup_author {
 	my $self = shift;
 	my ($tweetid) = @_;
-	foreach my $status (@{$self->home_timeline}) {
-		#print STDERR Dumper($status);
-		return $status->{user}{screen_name} if $status->{id} == $tweetid;
-	}
+	my $tweet = $self->get_message_by_id($tweetid);
+	return $tweet->{user}{screen_name} if $tweet;
 	return "";
 }
 
@@ -240,6 +249,21 @@ sub get_timeline {
 		# an unknown timeline type is a bug
 		return undef;
 	}
+}
+
+sub add_new_messages {
+	my $self = shift;
+	my ($msgs) = @_;
+
+	foreach my $m (@$msgs) {
+		$self->all_messages->{$m->{id}} = $m;
+	}
+}
+
+sub get_message_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->all_messages->{$id};
 }
 
 no Moose;

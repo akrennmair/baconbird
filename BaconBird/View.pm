@@ -2,6 +2,7 @@ package BaconBird::View;
 use Moose;
 
 use stfl;
+use HTML::Strip;
 
 use constant PROGRAM_VERSION => "0.1";
 use constant TWITTER_MAX_LEN => 140;
@@ -41,6 +42,7 @@ vbox
   vbox
     .expand:0
     .display:1
+    label text[infoline]:">> " .expand:h style_normal:bg=blue,fg=yellow,attr=bold
     label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply 1:Home Timeline 2:Mentions 3:Direct Messages" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
@@ -57,8 +59,12 @@ sub next_event {
 	my $e = $self->f->run(10000);
 
 	if (!defined($e)) {
+		$self->f->run(-1);
 		if ($self->f->get_focus eq "tweetinput") {
 			$self->set_remaining($self->f->get("inputfield"));
+		}
+		if ($self->f->get_focus eq "tweets") {
+			$self->update_info_line($self->f->get("tweetid"));
 		}
 		return;
 	}
@@ -82,6 +88,7 @@ sub next_event {
 	} elsif ($e eq "^R") {
 		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
+			$self->status_msg("Retweeting...");
 			$self->ctrl->retweet($tweetid);
 			$self->status_msg("Retweeted.");
 		}
@@ -98,6 +105,14 @@ sub next_event {
 	} elsif ($e eq "3") {
 		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
 		$self->get_timeline;
+	}
+}
+
+sub prepare {
+	my $self = shift;
+
+	if ($self->f->get_focus eq "tweets") {
+		$self->update_info_line($self->f->get("tweetid"));
 	}
 }
 
@@ -136,7 +151,7 @@ sub set_timeline {
 
 	foreach my $tweet (@$tl) {
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name};
-		my $text = "@" . $username . ": " . $tweet->{text};
+		my $text = sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}
 
@@ -203,6 +218,30 @@ sub set_remaining {
 	}
 }
 
+sub update_info_line {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	my $str = ">> ";
+	my $tweet = $self->ctrl->get_message_by_id($tweetid);
+
+	if ($tweet) {
+		my $hs = HTML::Strip->new();
+
+		$str .= "@" . $tweet->{user}{screen_name};
+		$str .= " (" . $tweet->{user}{name} . ")" if $tweet->{user}{name};
+		if ($tweet->{user}{location}) {
+			$str .= " - " . $tweet->{user}{location};
+		}
+
+		$str .= " | ";
+
+		my $source = $hs->parse($tweet->{source});
+		$str .= "posted via " . $source . " " . $tweet->relative_created_at . " | http://twitter.com/" . $tweet->{user}{screen_name} . "/statuses/" . $tweet->{id};
+	}
+
+	$self->f->set("infoline", $str);
+}
 
 no Moose;
 1;

@@ -41,6 +41,8 @@ sub run {
 	$self->view->set_rate_limit($self->model->get_rate_limit);
 	$self->reload_all;
 
+	$self->view->prepare;
+
 	while (!$self->quit) {
 		eval {
 			$self->view->set_rate_limit($self->model->get_rate_limit);
@@ -139,6 +141,12 @@ sub select_timeline {
 	my $self = shift;
 	my ($timeline) = @_;
 	$self->model->select_timeline($timeline);
+}
+
+sub get_message_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->model->get_message_by_id($id);
 }
 
 no Moose;
