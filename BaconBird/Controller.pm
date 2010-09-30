@@ -11,6 +11,11 @@ has 'view' => (
 	isa => 'BaconBird::View',
 );
 
+has 'shortener' => (
+	is => 'rw',
+	isa => 'BaconBird::Shortener',
+);
+
 has 'pinfile' => (
 	is => 'rw',
 	isa => 'Str',
@@ -147,6 +152,12 @@ sub get_message_by_id {
 	my $self = shift;
 	my ($id) = @_;
 	return $self->model->get_message_by_id($id);
+}
+
+sub shorten {
+	my $self = shift;
+	my ($text) = @_;
+	return $self->shortener->shorten_text($text);
 }
 
 no Moose;

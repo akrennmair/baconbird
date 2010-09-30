@@ -43,7 +43,7 @@ vbox
     .expand:0
     .display:1
     label text[infoline]:">> " .expand:h style_normal:bg=blue,fg=yellow,attr=bold
-    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply 1:Home Timeline 2:Mentions 3:Direct Messages" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply ^O:Shorten 1:Home Timeline 2:Mentions 3:Direct Messages" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
@@ -96,6 +96,10 @@ sub next_event {
 		$self->do_reply(0);
 	} elsif ($e eq "R") {
 		$self->do_reply(1);
+	} elsif ($e eq "^O") {
+		if ($self->f->get_focus eq "tweetinput") {
+			$self->shorten;
+		}
 	} elsif ($e eq "1") {
 		$self->select_timeline(BaconBird::Model::HOME_TIMELINE);
 		$self->get_timeline;
@@ -241,6 +245,16 @@ sub update_info_line {
 	}
 
 	$self->f->set("infoline", $str);
+}
+
+sub shorten {
+	my $self = shift;
+	my $text = $self->f->get("inputfield");
+
+	$self->set_lastline;
+	$self->status_msg("Shortening...");
+	my $newtext = $self->ctrl->shorten($text);
+	$self->set_input_field("Tweet: ", $newtext);
 }
 
 no Moose;

@@ -8,13 +8,16 @@ use Data::Dumper;
 use BaconBird::Controller;
 use BaconBird::Model;
 use BaconBird::View;
+use BaconBird::Shortener;
 
 my $ctrl = BaconBird::Controller->new();
 my $model = BaconBird::Model->new(ctrl => $ctrl);
 my $view = BaconBird::View->new(ctrl => $ctrl);
+my $shortener = BaconBird::Shortener->new();
 
 $ctrl->model($model);
 $ctrl->view($view);
+$ctrl->shortener($shortener);
 
 $ctrl->login;
 $ctrl->run;
