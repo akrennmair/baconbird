@@ -1,7 +1,7 @@
 package BaconBird::Shortener;
 use Moose;
 
-use WWW::Shorten 'TinyURL', ':short';
+use WWW::Shorten 'IsGd', ':short';
 use URI::Find;
 
 has 'finder' => (
