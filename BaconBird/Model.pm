@@ -200,9 +200,9 @@ sub get_rate_limit {
 
 sub get_wait_time {
 	my $self = shift;
-	#my $ratio = $self->nt->until_rate(1.5);
-	#return $ratio;
-	return DEFAULT_WAIT_TIME;
+	my $waittime = int(($self->nt->rate_reset - time) / ($self->nt->rate_remaining * 1.5));
+	#print STDERR "get_wait_time: $waittime s\n";
+	return $waittime;
 }
 
 sub retweet {
