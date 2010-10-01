@@ -13,6 +13,8 @@ use constant MENTIONS => 2;
 use constant DIRECT_MESSAGES => 3;
 
 use Net::Twitter;
+use I18N::Langinfo qw(langinfo CODESET);
+use Encode::Encoder;
 
 has 'ctrl' => (
 	is => 'rw',
@@ -177,6 +179,9 @@ sub reload_direct_messages {
 sub post_update {
 	my $self = shift;
 	my ($tweet, $status_id) = @_;
+
+	my $e = Encode::Encoder->new($tweet, langinfo(CODESET()));
+	$tweet = $e->iso_8859_1->data;
 
 	$status_id = -1 if !defined($status_id);
 
