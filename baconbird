@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-#use lib "/usr/share/baconbird";
+use lib ".";
 
 use Data::Dumper;
 use BaconBird::Controller;
