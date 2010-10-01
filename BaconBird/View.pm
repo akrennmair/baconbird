@@ -81,7 +81,15 @@ sub next_event {
 		$self->set_lastline;
 		if ($tweet ne "") {
 			$self->status_msg("Posting tweet...");
-			$self->ctrl->post_update($tweet, $self->saved_status_id);
+			eval {
+				$self->ctrl->post_update($tweet, $self->saved_status_id);
+			};
+			if (my $err = $@) {
+				$self->status_msg("Error: $err");
+				sleep(1);
+				$self->set_input_field("Tweet: ", $tweet);
+				return;
+			} 
 			$self->status_msg("");
 		}
 		$self->saved_status_id(undef);
