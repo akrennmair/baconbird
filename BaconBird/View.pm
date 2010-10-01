@@ -162,6 +162,8 @@ sub set_timeline {
 	$list .= "}";
 
 	$self->f->modify("tweets", "replace_inner", $list);
+
+	$self->f->run(-1);
 }
 
 sub set_rate_limit {
@@ -190,6 +192,9 @@ sub do_reply {
 sub get_timeline {
 	my $self = shift;
 	$self->set_timeline($self->ctrl->get_timeline);
+	if ($self->f->get_focus eq "tweets") {
+		$self->update_info_line($self->f->get("tweetid"));
+	}
 }
 
 sub select_timeline {
