@@ -23,6 +23,10 @@ has 'saved_status_id' => (
 	is => 'rw',
 );
 
+has 'saved_rcpt' => (
+	is => 'rw',
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -72,27 +76,29 @@ sub next_event {
 	if ($e eq "q") {
 		$self->ctrl->quit(1);
 	} elsif ($e eq "ENTER") {
-		$self->set_input_field("Tweet: ");
+		if ($self->ctrl->is_direct_message) {
+			$self->set_input_field("DM to: ", "", "end-input-rcpt");
+		} else {
+			$self->set_input_field("Tweet: ");
+		}
 	} elsif ($e eq "cancel-input") {
 		$self->set_lastline;
 		$self->saved_status_id(undef);
 	} elsif ($e eq "end-input") {
 		my $tweet = $self->f->get("inputfield");
 		$self->set_lastline;
-		if ($tweet ne "") {
-			$self->status_msg("Posting tweet...");
-			eval {
-				$self->ctrl->post_update($tweet, $self->saved_status_id);
-			};
-			if (my $err = $@) {
-				$self->status_msg("Error: $err");
-				sleep(1);
-				$self->set_input_field("Tweet: ", $tweet);
-				return;
-			} 
-			$self->status_msg("");
+		if ($self->ctrl->is_direct_message) {
+			$self->send_dm($tweet);
+		} else {
+			$self->post_update($tweet);
 		}
-		$self->saved_status_id(undef);
+	} elsif ($e eq "end-input-rcpt") {
+		my $rcpt = $self->f->get("inputfield");
+		$self->set_lastline;
+		if ($rcpt ne "") {
+			$self->saved_rcpt($rcpt);
+			$self->do_reply(0);
+		}
 	} elsif ($e eq "^R") {
 		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
@@ -143,12 +149,14 @@ sub set_lastline {
 
 sub set_input_field {
 	my $self = shift;
-	my ($label, $default_text) = @_;
+	my ($label, $default_text, $end_input_event) = @_;
 
 	$default_text = "" if !defined($default_text);
+	$end_input_event = "end-input" if !defined($end_input_event);
+
 	my $pos = length($default_text);
 
-	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:end-input modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:' . $end_input_event . ' modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
 
 	$self->set_remaining($default_text);
 
@@ -184,13 +192,22 @@ sub set_rate_limit {
 sub do_reply {
 	my $self = shift;
 	my ($is_public) = @_;
+	my $is_dm = $self->ctrl->is_direct_message;
+
+	if ($is_dm && $is_public) {
+		die "You can't publicly reply to a direct message.";
+	}
 
 	my $tweetid = $self->f->get("tweetid");
 
-	if (defined($tweetid) && $tweetid ne "") {
+	if ($is_dm) {
+		my $rcpt = $self->saved_rcpt || $self->ctrl->get_dm_by_id($tweetid)->{sender}{screen_name};
+		$self->set_input_field("DM to $rcpt: ");
+		$self->saved_rcpt($rcpt);
+		$self->saved_status_id($tweetid);
+	} elsif (defined($tweetid) && $tweetid ne "") {
 		my $public = "";
 		$public = "." if $is_public;
-
 		$self->saved_status_id($tweetid);
 		my $username = $self->ctrl->lookup_author($tweetid);
 		$self->set_input_field("Reply: ", $public . '@' . $username . ' ');
@@ -268,6 +285,46 @@ sub shorten {
 	$self->status_msg("Shortening...");
 	my $newtext = $self->ctrl->shorten($text);
 	$self->set_input_field("Tweet: ", $newtext);
+}
+
+sub post_update {
+	my $self = shift;
+	my ($tweet) = @_;
+	if ($tweet ne "") {
+		$self->status_msg("Posting tweet...");
+		eval {
+			$self->ctrl->post_update($tweet, $self->saved_status_id);
+		};
+		if (my $err = $@) {
+			$self->status_msg("Error: $err");
+			sleep(1);
+			$self->set_input_field("Tweet: ", $tweet);
+			return;
+		} 
+		$self->status_msg("");
+	}
+	$self->saved_status_id(undef);
+}
+
+sub send_dm {
+	my $self = shift;
+	my ($tweet) = @_;
+	if ($tweet ne "") {
+		my $rcpt = $self->saved_rcpt;
+		$self->status_msg("Sending message to $rcpt...");
+		eval {
+			$self->ctrl->send_dm($tweet, $rcpt);
+		};
+		if (my $err = $@) {
+			$self->status_msg("Error: $err");
+			sleep(1);
+			$self->set_input_field("DM to $rcpt: ", $tweet);
+			return;
+		}
+		$self->status_msg("");
+	}
+	$self->saved_rcpt(undef);
+	$self->saved_status_id(undef);
 }
 
 no Moose;

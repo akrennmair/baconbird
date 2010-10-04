@@ -154,10 +154,27 @@ sub get_message_by_id {
 	return $self->model->get_message_by_id($id);
 }
 
+sub get_dm_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->model->get_dm_by_id($id);
+}
+
 sub shorten {
 	my $self = shift;
 	my ($text) = @_;
 	return $self->shortener->shorten_text($text);
+}
+
+sub is_direct_message {
+	my $self = shift;
+	return $self->model->is_direct_message;
+}
+
+sub send_dm {
+	my $self = shift;
+	my ($tweet, $rcpt) = @_;
+	$self->model->send_dm($tweet, $rcpt);
 }
 
 no Moose;

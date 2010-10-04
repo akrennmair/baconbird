@@ -84,6 +84,12 @@ has 'all_messages' => (
 	default => sub { { } },
 );
 
+has 'all_dms' => (
+	is => 'rw',
+	isa => 'HashRef',
+	default => sub { { } },
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
@@ -168,6 +174,9 @@ sub reload_direct_messages {
 		my $newdata = $self->nt->direct_messages({ since_id => $id, count => 50 });
 		my $olddata = $self->direct_messages;
 		my @new_dms = ( @$newdata, @$olddata );
+
+		$self->add_new_dms($newdata);
+
 		$self->direct_messages(\@new_dms);
 	};
 	if (my $err = $@) {
@@ -200,7 +209,7 @@ sub get_rate_limit {
 
 sub get_wait_time {
 	my $self = shift;
-	my $waittime = int(($self->nt->rate_reset - time) / ($self->nt->rate_remaining * 1.5));
+	my $waittime = int((($self->nt->rate_reset - time) / $self->nt->rate_remaining) * 1.5);
 	#print STDERR "get_wait_time: $waittime s\n";
 	return $waittime;
 }
@@ -265,10 +274,36 @@ sub add_new_messages {
 	}
 }
 
+sub add_new_dms {
+	my $self = shift;
+	my ($msgs) = @_;
+
+	foreach my $dm (@$msgs) {
+		$self->all_dms->{$dm->{id}} = $dm;
+	}
+}
+
 sub get_message_by_id {
 	my $self = shift;
 	my ($id) = @_;
 	return $self->all_messages->{$id};
+}
+
+sub get_dm_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->all_dms->{$id};
+}
+
+sub is_direct_message {
+	my $self = shift;
+	return $self->current_timeline == DIRECT_MESSAGES;
+}
+
+sub send_dm {
+	my $self = shift;
+	my ($tweet, $rcpt) = @_;
+	$self->nt->new_direct_message($rcpt, $tweet);
 }
 
 no Moose;
