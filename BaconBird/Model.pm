@@ -11,6 +11,7 @@ use constant DEFAULT_WAIT_TIME => 60;
 use constant HOME_TIMELINE => 1;
 use constant MENTIONS => 2;
 use constant DIRECT_MESSAGES => 3;
+use constant SEARCH_RESULTS => 4;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -24,7 +25,7 @@ has 'ctrl' => (
 has 'nt' => (
 	is => 'ro',
 	isa => 'Net::Twitter',
-	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects RateLimit/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET, decode_html_entities => 1); },
+	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects RateLimit API::Search/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET, decode_html_entities => 1); },
 );
 
 has 'user_id' => (
@@ -55,6 +56,12 @@ has 'direct_messages' => (
 	default => sub { [ ] },
 );
 
+has 'search_results' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
 has 'current_timeline' => (
 	is => 'rw',
 	default => HOME_TIMELINE,
@@ -78,6 +85,12 @@ has 'mentions_ts' => (
 	default => 0,
 );
 
+has 'search_results_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
 has 'all_messages' => (
 	is => 'rw',
 	isa => 'HashRef',
@@ -88,6 +101,11 @@ has 'all_dms' => (
 	is => 'rw',
 	isa => 'HashRef',
 	default => sub { { } },
+);
+
+has 'searchphrase' => (
+	is => 'rw',
+	isa => 'Str',
 );
 
 sub login {
@@ -115,6 +133,8 @@ sub reload_all {
 		$self->reload_direct_messages;
 	} elsif ($tl == MENTIONS) {
 		$self->reload_mentions;
+	} elsif ($tl == SEARCH_RESULTS) {
+		$self->reload_search_results;
 	}
 }
 
@@ -241,6 +261,7 @@ sub lookup_author {
 sub select_timeline {
 	my $self = shift;
 	my ($timeline) = @_;
+	my $old_timeline = $self->current_timeline;
 	$self->current_timeline($timeline);
 	if ($timeline == HOME_TIMELINE) {
 		$self->reload_home_timeline if ($self->home_timeline_ts + DEFAULT_WAIT_TIME) < time;
@@ -248,6 +269,12 @@ sub select_timeline {
 		$self->reload_direct_messages if ($self->direct_messages_ts + DEFAULT_WAIT_TIME) < time;
 	} elsif ($timeline == MENTIONS) {
 		$self->reload_mentions if ($self->mentions_ts + DEFAULT_WAIT_TIME) < time;
+	} elsif ($timeline == SEARCH_RESULTS) {
+		if ($self->searchphrase && length($self->searchphrase) > 0) {
+			$self->reload_search_results if ($self->search_results_ts + DEFAULT_WAIT_TIME) < time;
+		} else {
+			$self->current_timeline($old_timeline);
+		}
 	}
 }
 
@@ -259,6 +286,8 @@ sub get_timeline {
 		return $self->mentions;
 	} elsif ($self->current_timeline == DIRECT_MESSAGES) {
 		return $self->direct_messages;
+	} elsif ($self->current_timeline == SEARCH_RESULTS) {
+		return $self->search_results;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
@@ -304,6 +333,38 @@ sub send_dm {
 	my $self = shift;
 	my ($tweet, $rcpt) = @_;
 	$self->nt->new_direct_message($rcpt, $tweet);
+}
+
+sub reload_search_results {
+	my $self = shift;
+	my $id = -1;
+	if (defined($self->search_results) && scalar(@{$self->search_results}) > 0) {
+		$id = $self->search_results->[0]->{id};
+	}
+
+	eval {
+		my $newdata = $self->nt->search({ since_id => $id, q => $self->searchphrase, count => 50 })->{results};
+		my $olddata = $self->search_results;
+		my @new_search_results = ( @$newdata, @$olddata );
+
+		#$self->add_new_search_results($newdata); # TODO: really?
+
+		$self->search_results(\@new_search_results);
+	};
+	if (my $err = $@) {
+		die "Reloading search results failed: " . $err->error . "\n";
+	}
+	$self->search_results_ts(time);
+}
+
+sub set_search_phrase {
+	my $self = shift;
+	my ($searchphrase) = @_;
+	if (!defined($self->searchphrase) || $searchphrase ne $self->searchphrase) {
+		$self->searchphrase($searchphrase);
+		$self->search_results([ ]);
+		$self->search_results_ts(0);
+	}
 }
 
 no Moose;

@@ -47,7 +47,7 @@ vbox
     .expand:0
     .display:1
     label text[infoline]:">> " .expand:h style_normal:bg=blue,fg=yellow,attr=bold
-    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply ^O:Shorten 1:Home Timeline 2:Mentions 3:Direct Messages" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply ^O:Shorten /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
@@ -123,6 +123,21 @@ sub next_event {
 	} elsif ($e eq "3") {
 		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
 		$self->get_timeline;
+	} elsif ($e eq "4") {
+		$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
+		$self->get_timeline;
+	} elsif ($e eq "/") {
+		$self->set_input_field("Search: ", "", "end-input-search");
+	} elsif ($e eq "end-input-search") {
+		my $searchphrase = $self->f->get("inputfield");
+		$self->set_lastline;
+		if (defined($searchphrase) && $searchphrase ne "") {
+			$self->status_msg("Searching...");
+			$self->ctrl->set_search_phrase($searchphrase);
+			$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
+			$self->get_timeline;
+			$self->status_msg("");
+		}
 	}
 }
 
@@ -170,7 +185,8 @@ sub set_timeline {
 	my $list = "{list ";
 
 	foreach my $tweet (@$tl) {
-		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name};
+		#print STDERR Dumper($tweet);
+		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
 		my $text = sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}
@@ -217,7 +233,7 @@ sub do_reply {
 sub get_timeline {
 	my $self = shift;
 	$self->set_timeline($self->ctrl->get_timeline);
-	if ($self->f->get_focus eq "tweets") {
+	if (defined($self->f->get_focus) && $self->f->get_focus ne "tweetinput") {
 		$self->update_info_line($self->f->get("tweetid"));
 	}
 }
@@ -234,7 +250,8 @@ sub set_caption {
 	my ($view) = @_;
 	my %caption = ( BaconBird::Model::HOME_TIMELINE => "Home Timeline", 
 					BaconBird::Model::MENTIONS => "Mentions", 
-					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages" );
+					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages",
+					BaconBird::Model::SEARCH_RESULTS => "Search Results" );
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 

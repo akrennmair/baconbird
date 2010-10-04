@@ -177,5 +177,11 @@ sub send_dm {
 	$self->model->send_dm($tweet, $rcpt);
 }
 
+sub set_search_phrase {
+	my $self = shift;
+	my ($searchphrase) = @_;
+	$self->model->set_search_phrase($searchphrase);
+}
+
 no Moose;
 1;
