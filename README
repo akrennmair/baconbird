@@ -29,6 +29,23 @@ be installed beofre baconbird can be used.
 
 Debian comes with ready-to-use packages for these dependencies.
 
+Installation
+------------
+
+Installing baconbird is as simple as:
+
+	make install
+
+When using "make install", you have the usual parameters "prefix" and "DESTDIR" 
+available to control where your program will be installed and where the 
+installation files will be copied to.
+
+Optionally, you can check whether you have all necessary dependencies 
+installed, by simply running:
+
+	make
+
+
 Contact
 -------
 Andreas Krennmair <ak@synflood.at>
