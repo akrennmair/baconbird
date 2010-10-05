@@ -7,6 +7,7 @@ use constant CONSUMER_KEY => "HNWGxf3exkB1mQGpM83PWw";
 use constant CONSUMER_SECRET => "dcQsVwycEa6vNCMO0ljbzZfzloqBXcRDMYXRo1bsN7k";
 
 use constant DEFAULT_WAIT_TIME => 60;
+use constant MIN_WAIT_TIME => 10;
 
 use constant HOME_TIMELINE => 1;
 use constant MENTIONS => 2;
@@ -230,7 +231,7 @@ sub get_rate_limit {
 sub get_wait_time {
 	my $self = shift;
 	my $waittime = int((($self->nt->rate_reset - time) / $self->nt->rate_remaining) * 1.5);
-	#print STDERR "get_wait_time: $waittime s\n";
+	$waittime = MIN_WAIT_TIME if $waittime < MIN_WAIT_TIME;
 	return $waittime;
 }
 
