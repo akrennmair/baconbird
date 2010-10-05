@@ -19,6 +19,5 @@ $ctrl->model($model);
 $ctrl->view($view);
 $ctrl->shortener($shortener);
 
-$ctrl->login;
 $ctrl->run;
 

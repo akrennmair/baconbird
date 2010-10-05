@@ -1,6 +1,8 @@
 package BaconBird::Controller;
 use Moose;
 
+use IO::Handle;
+
 has 'model' => (
 	is => 'rw',
 	isa => 'BaconBird::Model',
@@ -42,6 +44,13 @@ sub BUILD {
 sub run {
 	my $self = shift;
 	my $ts = time + $self->model->get_wait_time;
+
+	eval {
+		$self->login;
+	};
+	if (my $err = $@) {
+		die "Error: authorization failed.\nAre you sure you provided the correct authentication information?\n";
+	}
 
 	$self->view->set_rate_limit($self->model->get_rate_limit);
 	$self->reload_all;
@@ -106,7 +115,8 @@ sub get_pin {
 	my $self = shift;
 	my ($auth_url) = @_;
 
-	print "Authorize this app at ", $auth_url, " and enter the PIN#\n";
+	print "Please authorize this app at ", $auth_url, " and enter the PIN: ";
+	STDOUT->flush;
 	my $pin = <STDIN>;
 	chomp($pin);
 	return $pin;
