@@ -1,0 +1,191 @@
+=pod
+
+=head1 Documentation for Baconbird, a Twitter Client
+
+Andreas Krennmair <L<ak@synflood.at>>
+
+=head2 Introduction
+
+Baconbird is a Twitter client for text terminals. Twitter is a popular 
+microblogging service, allowing users to publish their own short messages 
+called "tweets". Baconbird is intended to run on any Unix-like platform
+that is supported by the programming language Perl and the STFL library.
+
+=head2 Installation
+
+=head3 Downloading Baconbird
+
+You can download baconbird releases from the baconbird website: L<http://synflood.at/baconbird.html>
+The latest source code can be found on GitHub: L<http://github.com/akrennmair/baconbird>
+
+=head3 Dependencies
+
+Baconbird depends on a number of packages and libraries to work correctly, as 
+listed below:
+
+=over 12
+
+=item * Perl 5.10 or newer: L<http://www.perl.org/>
+
+=item * STFL: L<http://www.clifford.at/stfl/>
+
+=item * Perl modules:
+
+=over 12
+
+=item * Moose
+
+=item * Net::Twitter
+
+=item * WWW::Shorten
+
+=item * URI::Find
+
+=item * HTML::Strip
+
+=back
+
+=back
+
+Debian comes with ready-to-use packages for these dependencies and is thus the 
+recommended distribution to use.
+
+=head3 Installation
+
+Installing baconbird is as simple as:
+
+	make install
+
+When using "make install", you have the usual parameters C<prefix> and 
+C<DESTDIR> available to control where your program will be installed and where 
+the installation files will be copied to.
+
+Optionally, you can check whether you have all necessary dependencies 
+installed, by running:
+
+	make
+
+=head2 Using Baconbird
+
+The first time you start, baconbird, it will inform you to authenticate with 
+Twitter. Login to Twitter, then open the URL as printed on the screen, confirm 
+that you want to allow Baconbird access to your Twitter account, and then enter 
+the shown PIN into the baconbird prompt.
+
+After you successfully accomplished that, baconbird's main screen will open. It 
+is divided into several main components. The topmost line shows the program 
+name and version, the view in which you currently are ("Home Timeline" by 
+default), and on the top right corner, when the API rate limit is reset, how 
+many API calls you still have available, and how many how have available in 
+total per cycle. Don't worry, unless you send several hundred tweets or do 
+several hundred searches by hour, baconbird will make sure that you never run 
+out of API calls to the Twitter servers.
+
+Below the topmost line, the screen is dominated by the list that displays the 
+tweets of the currently selected timeline. Below that, you have additional 
+information about the currently selected tweet, such as sender, the time when 
+it was posted, and the original URL.
+
+Below that, you have a quick reminder about the most important keystrokes that 
+baconbird understands. Below that you find the "last line", which displays 
+information about operations that are currently ongoing and where prompts are 
+presented to the user.
+
+=head3 Timelines
+
+=head4 Home Timeline
+
+The Home Timeline is selected by default, and shows your own tweets and the 
+tweets of those users you are subscribed to. It can be selected by pressing 
+C<1>.
+
+=head4 Mentions
+
+The Mentions timeline shows the tweets where your username is mentioned (i.e. 
+prefixed with C<@>). It can be selected by pressing C<2>.
+
+=head4 Direct Messages
+
+Twitter allows sending and receiving non-public direct messages between users. 
+The Direct Messages timeline shows the latest direct messages. It can be 
+selected by pressing C<3>.
+
+=head4 Search Results
+
+Baconbird offers the ability to run search queries. A user can do this by 
+pressing the C</> key, and entering a search query. A list of matches is then 
+presented and continuously updated. A user can then select another timeline, 
+and switch back to the search result timeline by pressing C<4>. The updates on 
+the search results are then continued.
+
+=head3 Functions
+
+=head4 Automatic Reloads
+
+The currently selected timeline is continuously updated, there is no need for 
+the user to trigger such updates in any way.
+
+=head4 Sending Tweets
+
+To send a new tweet, a user simply needs to press the C<ENTER> key. An input 
+field will then open in the last line, where the user can then enter the text.  
+On the right side, the number of remaining characters is displayed. The user is 
+additionally warned by colors when the number of characters becomes more than 
+what is allowed with Twitter.
+
+To make tweets that contain URLs shorter, baconbird contains integration with 
+the URL shortening service L<http://is.gd/>. Users whose tweets contain URLs 
+can press C<Ctrl-O>, and all URLs in the tweet will be shortened. Baconbird 
+always makes sure that the tweet doesn't get longer through this URL. Also, 
+URLs that already are shortened by a previous operation will not be shortened 
+again. This allows that users can press C<Ctrl-O> more than once while posting 
+a tweet.
+
+In the Direct Messages timeline, the C<ENTER> key will send a new direct 
+message, first asking for the recipient and then for the message.
+
+=head4 Retweeting
+
+To retweet another user's tweet to your own timeline, a user only needs to 
+select this tweet and press C<Ctrl-R>. Direct messages can't be retweeted.
+
+=head4 Replies
+
+When a user presses C<r> (reply) or C<R> (public reply), baconbird will open a 
+prompt to enter a reply to the currently selected tweet. It will prefix the 
+message by addressing the sender of the tweet to which you reply. The 
+difference between "regular" and public replies is that public replies are 
+additionally prefixed with a dot (".") so that all your followers, even those who 
+don't follow the addressed user, can read the reply.
+
+=head4 Searching
+
+As mentioned above, baconbird allows searching for phrases by pressing C</>. 
+The search results will then be regularly updated.
+
+
+=head2 License
+
+MIT/X Consortium License
+
+(C)opyright 2010 Andreas Krennmair <L<ak@synflood.at>>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+=cut

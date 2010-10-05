@@ -9,7 +9,11 @@ Baconbird is a Twitter client for text terminals.
 Downloading
 -----------
 
-You can download baconbird releases and the latest source code from this website:
+You can download baconbird releases from the baconbird website:
+
+	http://synflood.at/baconbird.html
+
+The latest source code can be found on GitHub:
 
 	http://github.com/akrennmair/baconbird
 
