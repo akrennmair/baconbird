@@ -115,17 +115,25 @@ sub next_event {
 			$self->shorten;
 		}
 	} elsif ($e eq "1") {
+		$self->status_msg("Loading home timeline...");
 		$self->select_timeline(BaconBird::Model::HOME_TIMELINE);
 		$self->get_timeline;
+		$self->status_msg("");
 	} elsif ($e eq "2") {
+		$self->status_msg("Loading mentions...");
 		$self->select_timeline(BaconBird::Model::MENTIONS);
 		$self->get_timeline;
+		$self->status_msg("");
 	} elsif ($e eq "3") {
+		$self->status_msg("Loading direct messages...");
 		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
 		$self->get_timeline;
+		$self->status_msg("");
 	} elsif ($e eq "4") {
+		$self->status_msg("Loading search results...");
 		$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
 		$self->get_timeline;
+		$self->status_msg("");
 	} elsif ($e eq "/") {
 		$self->set_input_field("Search: ", "", "end-input-search");
 	} elsif ($e eq "end-input-search") {
