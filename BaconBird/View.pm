@@ -4,7 +4,7 @@ use Moose;
 use stfl;
 use HTML::Strip;
 
-use constant PROGRAM_VERSION => "0.1";
+use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
 use Data::Dumper;
