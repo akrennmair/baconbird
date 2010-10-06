@@ -26,7 +26,7 @@ has 'ctrl' => (
 has 'nt' => (
 	is => 'ro',
 	isa => 'Net::Twitter',
-	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects RateLimit API::Search/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET, decode_html_entities => 1); },
+	default => sub { return Net::Twitter->new(traits => [qw/OAuth API::REST InflateObjects RateLimit API::Search/], consumer_key => CONSUMER_KEY, consumer_secret => CONSUMER_SECRET, decode_html_entities => 1, ssl => 1); },
 );
 
 has 'user_id' => (

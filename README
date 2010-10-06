@@ -30,6 +30,7 @@ be installed beofre baconbird can be used.
 	* WWW::Shorten
 	* URI::Find
 	* HTML::Strip
+	* IO::Socket::SSL
 
 Debian squeeze (and later) comes with ready-to-use packages for these 
 dependencies. The required packages are: 
@@ -39,6 +40,7 @@ dependencies. The required packages are:
 - liburi-find-perl 
 - libhtml-strip-perl 
 - libstfl-perl
+- libio-socket-ssl-perl
 
 Installation
 ------------
