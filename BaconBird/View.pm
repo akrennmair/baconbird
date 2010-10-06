@@ -185,9 +185,9 @@ sub set_timeline {
 	my $list = "{list ";
 
 	foreach my $tweet (@$tl) {
-		#print STDERR Dumper($tweet);
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
 		my $text = sprintf("[%16s] %s", "@" . $username, $tweet->{text});
+		$text =~ s/[\r\n]+/ /g;
 		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}
 
