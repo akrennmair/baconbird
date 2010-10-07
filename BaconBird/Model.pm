@@ -368,5 +368,10 @@ sub set_search_phrase {
 	}
 }
 
+sub get_search_phrase {
+	my $self = shift;
+	return $self->searchphrase;
+}
+
 no Moose;
 1;

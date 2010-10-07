@@ -7,6 +7,11 @@ use HTML::Strip;
 use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
+use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results";
+use constant HELP_DM => "q:Quit ENTER:New DM r:Reply /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results";
+use constant HELP_TWEET => "ESC:Cancel ENTER:Send ^O:Shorten URLs";
+use constant HELP_DM_USERNAME => "ESC:Cancel ENTER:Confirm";
+
 use Data::Dumper;
 
 has 'f' => (
@@ -25,6 +30,12 @@ has 'saved_status_id' => (
 
 has 'saved_rcpt' => (
 	is => 'rw',
+);
+
+has 'allow_shorten' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 1,
 );
 
 sub BUILD {
@@ -47,13 +58,14 @@ vbox
     .expand:0
     .display:1
     label text[infoline]:">> " .expand:h style_normal:bg=blue,fg=yellow,attr=bold
-    label text:"q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply ^O:Shorten /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results" .expand:h style_normal:bg=blue,fg=white,attr=bold
+    label text[shorthelp]:"" .expand:h style_normal:bg=blue,fg=white,attr=bold
   hbox[lastline]
     .expand:0
     label text[msg]:"" .expand:h
 EOT
 
 	$self->f->set("program", "[baconbird " . PROGRAM_VERSION . "] ");
+	$self->set_shorthelp(HELP_TIMELINE);
 	$self->set_caption(BaconBird::Model::HOME_TIMELINE);
 }
 
@@ -77,22 +89,34 @@ sub next_event {
 		$self->ctrl->quit(1);
 	} elsif ($e eq "ENTER") {
 		if ($self->ctrl->is_direct_message) {
+			$self->set_shorthelp(HELP_DM_USERNAME);
+			$self->allow_shorten(0);
 			$self->set_input_field("DM to: ", "", "end-input-rcpt");
 		} else {
+			$self->set_shorthelp(HELP_TWEET);
 			$self->set_input_field("Tweet: ");
 		}
 	} elsif ($e eq "cancel-input") {
+		$self->allow_shorten(1);
 		$self->set_lastline;
+		if ($self->ctrl->is_direct_message) {
+			$self->set_shorthelp(HELP_DM);
+		} else {
+			$self->set_shorthelp(HELP_TIMELINE);
+		}
 		$self->saved_status_id(undef);
 	} elsif ($e eq "end-input") {
 		my $tweet = $self->f->get("inputfield");
 		$self->set_lastline;
 		if ($self->ctrl->is_direct_message) {
+			$self->set_shorthelp(HELP_DM);
 			$self->send_dm($tweet);
 		} else {
+			$self->set_shorthelp(HELP_TIMELINE);
 			$self->post_update($tweet);
 		}
 	} elsif ($e eq "end-input-rcpt") {
+		$self->allow_shorten(1);
 		my $rcpt = $self->f->get("inputfield");
 		$self->set_lastline;
 		if ($rcpt ne "") {
@@ -115,31 +139,41 @@ sub next_event {
 			$self->shorten;
 		}
 	} elsif ($e eq "1") {
+		$self->set_shorthelp(HELP_TIMELINE);
 		$self->status_msg("Loading home timeline...");
 		$self->select_timeline(BaconBird::Model::HOME_TIMELINE);
 		$self->get_timeline;
 		$self->status_msg("");
 	} elsif ($e eq "2") {
+		$self->set_shorthelp(HELP_TIMELINE);
 		$self->status_msg("Loading mentions...");
 		$self->select_timeline(BaconBird::Model::MENTIONS);
 		$self->get_timeline;
 		$self->status_msg("");
 	} elsif ($e eq "3") {
+		$self->set_shorthelp(HELP_DM);
 		$self->status_msg("Loading direct messages...");
 		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
 		$self->get_timeline;
 		$self->status_msg("");
 	} elsif ($e eq "4") {
-		$self->status_msg("Loading search results...");
-		$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
-		$self->get_timeline;
-		$self->status_msg("");
+		my $searchphrase = $self->ctrl->get_search_phrase;
+		if (defined($searchphrase) && $searchphrase ne "") {
+			$self->set_shorthelp(HELP_TIMELINE);
+			$self->status_msg("Loading search results...");
+			$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
+			$self->get_timeline;
+			$self->status_msg("");
+		} else {
+			$self->status_msg("No search results to view.");
+		}
 	} elsif ($e eq "/") {
 		$self->set_input_field("Search: ", "", "end-input-search");
 	} elsif ($e eq "end-input-search") {
 		my $searchphrase = $self->f->get("inputfield");
 		$self->set_lastline;
 		if (defined($searchphrase) && $searchphrase ne "") {
+			$self->set_shorthelp(HELP_TIMELINE);
 			$self->status_msg("Searching...");
 			$self->ctrl->set_search_phrase($searchphrase);
 			$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
@@ -179,7 +213,7 @@ sub set_input_field {
 
 	my $pos = length($default_text);
 
-	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:' . $end_input_event . ' modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
+	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text[prompt]:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:' . $end_input_event . ' modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
 
 	$self->set_remaining($default_text);
 
@@ -221,6 +255,8 @@ sub do_reply {
 	if ($is_dm && $is_public) {
 		die "You can't publicly reply to a direct message.";
 	}
+
+	$self->set_shorthelp(HELP_TWEET);
 
 	my $tweetid = $self->f->get("tweetid");
 
@@ -304,12 +340,15 @@ sub update_info_line {
 
 sub shorten {
 	my $self = shift;
-	my $text = $self->f->get("inputfield");
+	if ($self->allow_shorten) {
+		my $text = $self->f->get("inputfield");
+		my $prompt = $self->f->get("prompt");
 
-	$self->set_lastline;
-	$self->status_msg("Shortening...");
-	my $newtext = $self->ctrl->shorten($text);
-	$self->set_input_field("Tweet: ", $newtext);
+		$self->set_lastline;
+		$self->status_msg("Shortening...");
+		my $newtext = $self->ctrl->shorten($text);
+		$self->set_input_field($prompt, $newtext);
+	}
 }
 
 sub post_update {
@@ -350,6 +389,12 @@ sub send_dm {
 	}
 	$self->saved_rcpt(undef);
 	$self->saved_status_id(undef);
+}
+
+sub set_shorthelp {
+	my $self = shift;
+	my ($text) = @_;
+	$self->f->set("shorthelp", $text);
 }
 
 no Moose;

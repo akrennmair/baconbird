@@ -193,5 +193,10 @@ sub set_search_phrase {
 	$self->model->set_search_phrase($searchphrase);
 }
 
+sub get_search_phrase {
+	my $self = shift;
+	return $self->model->get_search_phrase;
+}
+
 no Moose;
 1;
