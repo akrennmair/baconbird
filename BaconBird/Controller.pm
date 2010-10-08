@@ -62,7 +62,7 @@ sub run {
 			$self->view->set_rate_limit($self->model->get_rate_limit);
 			$self->view->next_event();
 
-			if (time >= $ts) {
+			if (!$self->quit && time >= $ts) {
 				$self->reload_all_and_update_view;
 				$ts = time + $self->model->get_wait_time;
 			}
