@@ -398,7 +398,7 @@ sub reload_search_results {
 		my $olddata = $self->search_results;
 		my @new_search_results = ( @$newdata, @$olddata );
 
-		#$self->add_new_search_results($newdata); # TODO: really?
+		$self->add_new_messages($newdata);
 
 		$self->search_results(\@new_search_results);
 	};

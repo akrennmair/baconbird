@@ -327,7 +327,9 @@ sub update_info_line {
 		if ($tweet) {
 			my $hs = HTML::Strip->new();
 
-			$str .= "@" . $tweet->{user}{screen_name};
+			my $screen_name = $tweet->{user}{screen_name} || $tweet->{from_user};
+
+			$str .= "@" . $screen_name;
 			$str .= " (" . $tweet->{user}{name} . ")" if $tweet->{user}{name};
 			if ($tweet->{user}{location}) {
 				$str .= " - " . $tweet->{user}{location};
@@ -336,7 +338,7 @@ sub update_info_line {
 			$str .= " | ";
 
 			my $source = $hs->parse($tweet->{source});
-			$str .= "posted via " . $source . " " . $tweet->relative_created_at . " | http://twitter.com/" . $tweet->{user}{screen_name} . "/statuses/" . $tweet->{id};
+			$str .= "posted via " . $source . " " . $tweet->relative_created_at . " | http://twitter.com/" . $screen_name . "/statuses/" . $tweet->{id};
 		}
 	}
 
