@@ -139,42 +139,22 @@ sub next_event {
 			$self->shorten;
 		}
 	} elsif ($e eq "1") {
-		$self->set_shorthelp(HELP_TIMELINE);
-		$self->status_msg("Loading home timeline...");
-		$self->select_timeline(BaconBird::Model::HOME_TIMELINE);
-		$self->get_timeline;
-		$self->status_msg("");
+		$self->load_timeline(BaconBird::Model::HOME_TIMELINE);
 	} elsif ($e eq "2") {
-		$self->set_shorthelp(HELP_TIMELINE);
-		$self->status_msg("Loading mentions...");
-		$self->select_timeline(BaconBird::Model::MENTIONS);
-		$self->get_timeline;
-		$self->status_msg("");
+		$self->load_timeline(BaconBird::Model::MENTIONS);
 	} elsif ($e eq "3") {
-		$self->set_shorthelp(HELP_DM);
-		$self->status_msg("Loading direct messages...");
-		$self->select_timeline(BaconBird::Model::DIRECT_MESSAGES);
-		$self->get_timeline;
-		$self->status_msg("");
+		$self->load_timeline(BaconBird::Model::DIRECT_MESSAGES);
 	} elsif ($e eq "4") {
 		my $searchphrase = $self->ctrl->get_search_phrase;
 		if (defined($searchphrase) && $searchphrase ne "") {
-			$self->set_shorthelp(HELP_TIMELINE);
-			$self->status_msg("Loading search results...");
-			$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
-			$self->get_timeline;
-			$self->status_msg("");
+			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		} else {
 			$self->status_msg("No search results to view.");
 		}
 	} elsif ($e eq "5") {
 		my $screen_name = $self->ctrl->get_user_name;
 		if (defined($screen_name) && $screen_name ne "") {
-			$self->set_shorthelp(HELP_TIMELINE);
-			$self->status_msg("Loading user timeline...");
-			$self->select_timeline(BaconBird::Model::USER_TIMELINE);
-			$self->get_timeline;
-			$self->status_msg("");
+			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 		} else {
 			$self->status_msg("No user timeline to view.");
 		}
@@ -186,12 +166,8 @@ sub next_event {
 		my $searchphrase = $self->f->get("inputfield");
 		$self->set_lastline;
 		if (defined($searchphrase) && $searchphrase ne "") {
-			$self->set_shorthelp(HELP_TIMELINE);
-			$self->status_msg("Searching...");
 			$self->ctrl->set_search_phrase($searchphrase);
-			$self->select_timeline(BaconBird::Model::SEARCH_RESULTS);
-			$self->get_timeline;
-			$self->status_msg("");
+			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		}
 	}
 }
@@ -442,9 +418,31 @@ sub show_user_timeline {
 
 	$self->ctrl->set_user_name($screen_name);
 
-	$self->set_shorthelp(HELP_TIMELINE);
-	$self->status_msg("Loading user timeline...");
-	$self->select_timeline(BaconBird::Model::USER_TIMELINE);
+	$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+}
+
+sub load_timeline {
+	my $self = shift;
+	my ($tl) = @_;
+
+	my %shorthelp_map = ( 
+		BaconBird::Model::USER_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::SEARCH_RESULTS => HELP_TIMELINE, 
+		BaconBird::Model::DIRECT_MESSAGES => HELP_DM, 
+		BaconBird::Model::MENTIONS => HELP_TIMELINE, 
+		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
+	);
+	my %statusmsg_map = ( 
+		BaconBird::Model::USER_TIMELINE => "Loading user timeline...", 
+		BaconBird::Model::SEARCH_RESULTS => "Loading search results...", 
+		BaconBird::Model::DIRECT_MESSAGES => "Loading direct messages...", 
+		BaconBird::Model::MENTIONS => "Loading mentions...", 
+		BaconBird::Model::HOME_TIMELINE => "Loading home timeline...", 
+	);
+
+	$self->set_shorthelp($shorthelp_map{$tl});
+	$self->status_msg($statusmsg_map{$tl});
+	$self->select_timeline($tl);
 	$self->get_timeline;
 	$self->status_msg("");
 }
