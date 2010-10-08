@@ -332,21 +332,36 @@ sub update_info_line {
 	my ($tweetid) = @_;
 
 	my $str = ">> ";
-	my $tweet = $self->ctrl->get_message_by_id($tweetid);
 
-	if ($tweet) {
-		my $hs = HTML::Strip->new();
+	if ($self->ctrl->is_direct_message) {
+		my $dm = $self->ctrl->get_dm_by_id($tweetid);
 
-		$str .= "@" . $tweet->{user}{screen_name};
-		$str .= " (" . $tweet->{user}{name} . ")" if $tweet->{user}{name};
-		if ($tweet->{user}{location}) {
-			$str .= " - " . $tweet->{user}{location};
+		if ($dm) {
+			$str .= "@" . $dm->{sender_screen_name};
+			$str .= " (" . $dm->{sender}{name} . ")" if $dm->{sender}{name};
+			if ($dm->{sender}{location}) {
+				$str .= " - " . $dm->{sender}{location};
+			}
+
+			$str .= " | sent " . $dm->relative_created_at;
 		}
+	} else {
+		my $tweet = $self->ctrl->get_message_by_id($tweetid);
 
-		$str .= " | ";
+		if ($tweet) {
+			my $hs = HTML::Strip->new();
 
-		my $source = $hs->parse($tweet->{source});
-		$str .= "posted via " . $source . " " . $tweet->relative_created_at . " | http://twitter.com/" . $tweet->{user}{screen_name} . "/statuses/" . $tweet->{id};
+			$str .= "@" . $tweet->{user}{screen_name};
+			$str .= " (" . $tweet->{user}{name} . ")" if $tweet->{user}{name};
+			if ($tweet->{user}{location}) {
+				$str .= " - " . $tweet->{user}{location};
+			}
+
+			$str .= " | ";
+
+			my $source = $hs->parse($tweet->{source});
+			$str .= "posted via " . $source . " " . $tweet->relative_created_at . " | http://twitter.com/" . $tweet->{user}{screen_name} . "/statuses/" . $tweet->{id};
+		}
 	}
 
 	$self->f->set("infoline", $str);
