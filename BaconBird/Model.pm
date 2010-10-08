@@ -13,6 +13,7 @@ use constant HOME_TIMELINE => 1;
 use constant MENTIONS => 2;
 use constant DIRECT_MESSAGES => 3;
 use constant SEARCH_RESULTS => 4;
+use constant USER_TIMELINE => 5;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -63,6 +64,12 @@ has 'search_results' => (
 	default => sub { [ ] },
 );
 
+has 'user_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
 has 'current_timeline' => (
 	is => 'rw',
 	default => HOME_TIMELINE,
@@ -92,6 +99,12 @@ has 'search_results_ts' => (
 	default => 0,
 );
 
+has 'user_timeline_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
 has 'all_messages' => (
 	is => 'rw',
 	isa => 'HashRef',
@@ -105,6 +118,11 @@ has 'all_dms' => (
 );
 
 has 'searchphrase' => (
+	is => 'rw',
+	isa => 'Str',
+);
+
+has 'user_name' => (
 	is => 'rw',
 	isa => 'Str',
 );
@@ -136,6 +154,8 @@ sub reload_all {
 		$self->reload_mentions;
 	} elsif ($tl == SEARCH_RESULTS) {
 		$self->reload_search_results;
+	} elsif ($tl == USER_TIMELINE) {
+		$self->reload_user_timeline;
 	}
 }
 
@@ -204,6 +224,28 @@ sub reload_direct_messages {
 		die "Reloading direct messages failed: " . $err->error . "\n";
 	}
 	$self->direct_messages_ts(time);
+}
+
+sub reload_user_timeline {
+	my $self = shift;
+	my $id = -1;
+	if (defined($self->user_timeline) && scalar(@{$self->user_timeline}) > 0) {
+		$id = $self->user_timeline->[0]->{id};
+	}
+
+	eval {
+		my $newdata = $self->nt->user_timeline({ since_id => $id, screen_name => $self->user_name, count => 50 });
+		my $olddata = $self->user_timeline;
+		my @new_usertl = ( @$newdata, @$olddata );
+
+		$self->add_new_messages($newdata);
+
+		$self->user_timeline(\@new_usertl);
+	};
+	if (my $err = $@) {
+		die "Reloading user timeline failed: " . $err->error . "\n";
+	}
+	$self->user_timeline_ts(time);
 }
 
 sub post_update {
@@ -276,6 +318,12 @@ sub select_timeline {
 		} else {
 			$self->current_timeline($old_timeline);
 		}
+	} elsif ($timeline == USER_TIMELINE) {
+		if ($self->user_name && length($self->user_name) > 0) {
+			$self->reload_user_timeline if ($self->user_timeline_ts + DEFAULT_WAIT_TIME) < time;
+		} else {
+			$self->current_timeline($old_timeline);
+		}
 	}
 }
 
@@ -289,6 +337,8 @@ sub get_timeline {
 		return $self->direct_messages;
 	} elsif ($self->current_timeline == SEARCH_RESULTS) {
 		return $self->search_results;
+	} elsif ($self->current_timeline == USER_TIMELINE) {
+		return $self->user_timeline;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
@@ -371,6 +421,21 @@ sub set_search_phrase {
 sub get_search_phrase {
 	my $self = shift;
 	return $self->searchphrase;
+}
+
+sub set_user_name {
+	my $self = shift;
+	my ($user_name) = @_;
+	if (!defined($self->user_name) || $user_name ne $self->user_name) {
+		$self->user_name($user_name);
+		$self->user_timeline([ ]);
+		$self->user_timeline_ts(0);
+	}
+}
+
+sub get_user_name {
+	my $self = shift;
+	return $self->user_name;
 }
 
 no Moose;

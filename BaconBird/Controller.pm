@@ -198,5 +198,16 @@ sub get_search_phrase {
 	return $self->model->get_search_phrase;
 }
 
+sub set_user_name {
+	my $self = shift;
+	my ($name) = @_;
+	$self->model->set_user_name($name);
+};
+
+sub get_user_name {
+	my $self = shift;
+	return $self->model->get_user_name;
+}
+
 no Moose;
 1;

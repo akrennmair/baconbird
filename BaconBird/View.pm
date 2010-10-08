@@ -7,8 +7,8 @@ use HTML::Strip;
 use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
-use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results";
-use constant HELP_DM => "q:Quit ENTER:New DM r:Reply /:Search 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results";
+use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search u:User 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
+use constant HELP_DM => "q:Quit ENTER:New DM r:Reply /:Search u:User 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
 use constant HELP_TWEET => "ESC:Cancel ENTER:Send ^O:Shorten URLs";
 use constant HELP_DM_USERNAME => "ESC:Cancel ENTER:Confirm";
 
@@ -167,8 +167,21 @@ sub next_event {
 		} else {
 			$self->status_msg("No search results to view.");
 		}
+	} elsif ($e eq "5") {
+		my $screen_name = $self->ctrl->get_user_name;
+		if (defined($screen_name) && $screen_name ne "") {
+			$self->set_shorthelp(HELP_TIMELINE);
+			$self->status_msg("Loading user timeline...");
+			$self->select_timeline(BaconBird::Model::USER_TIMELINE);
+			$self->get_timeline;
+			$self->status_msg("");
+		} else {
+			$self->status_msg("No user timeline to view.");
+		}
 	} elsif ($e eq "/") {
 		$self->set_input_field("Search: ", "", "end-input-search");
+	} elsif ($e eq "u") {
+		$self->show_user_timeline;
 	} elsif ($e eq "end-input-search") {
 		my $searchphrase = $self->f->get("inputfield");
 		$self->set_lastline;
@@ -295,7 +308,8 @@ sub set_caption {
 	my %caption = ( BaconBird::Model::HOME_TIMELINE => "Home Timeline", 
 					BaconBird::Model::MENTIONS => "Mentions", 
 					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages",
-					BaconBird::Model::SEARCH_RESULTS => "Search Results" );
+					BaconBird::Model::SEARCH_RESULTS => "Search Results",
+					BaconBird::Model::USER_TIMELINE => "User Timeline" );
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 
@@ -395,6 +409,29 @@ sub set_shorthelp {
 	my $self = shift;
 	my ($text) = @_;
 	$self->f->set("shorthelp", $text);
+}
+
+sub show_user_timeline {
+	my $self = shift;
+	my $tweetid = $self->f->get("tweetid");
+	return if !defined($tweetid) || $tweetid eq "";
+
+	my $screen_name;
+
+	if ($self->ctrl->is_direct_message) {
+		$screen_name = $self->ctrl->get_dm_by_id($tweetid)->{sender}{screen_name};
+	} else {
+		my $tweet = $self->ctrl->get_message_by_id($tweetid);
+		$screen_name = $tweet->{user}{screen_name} || $tweet->{from_user};
+	}
+
+	$self->ctrl->set_user_name($screen_name);
+
+	$self->set_shorthelp(HELP_TIMELINE);
+	$self->status_msg("Loading user timeline...");
+	$self->select_timeline(BaconBird::Model::USER_TIMELINE);
+	$self->get_timeline;
+	$self->status_msg("");
 }
 
 no Moose;
