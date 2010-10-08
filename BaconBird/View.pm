@@ -7,7 +7,7 @@ use HTML::Strip;
 use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
-use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search u:User 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
+use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search u:User F:Favorite 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
 use constant HELP_DM => "q:Quit ENTER:New DM r:Reply /:Search u:User 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
 use constant HELP_TWEET => "ESC:Cancel ENTER:Send ^O:Shorten URLs";
 use constant HELP_DM_USERNAME => "ESC:Cancel ENTER:Confirm";
@@ -169,6 +169,12 @@ sub next_event {
 			$self->ctrl->set_search_phrase($searchphrase);
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		}
+	} elsif ($e eq "F") {
+		my $tweetid = $self->f->get("tweetid");
+		if (defined($tweetid) && $tweetid ne "") {
+			$self->ctrl->toggle_favorite($tweetid);
+			$self->get_timeline;
+		}
 	}
 }
 
@@ -217,7 +223,13 @@ sub set_timeline {
 
 	foreach my $tweet (@$tl) {
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
-		my $text = sprintf("[%16s] %s", "@" . $username, $tweet->{text});
+		my $text;
+		if ($tweet->{favorited}) {
+			$text .= "!";
+		} else {
+			$text .= " ";
+		}
+		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$text =~ s/[\r\n]+/ /g;
 		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
 	}

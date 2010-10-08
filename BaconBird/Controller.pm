@@ -209,5 +209,11 @@ sub get_user_name {
 	return $self->model->get_user_name;
 }
 
+sub toggle_favorite {
+	my $self = shift;
+	my ($tweetid) = @_;
+	$self->model->toggle_favorite($tweetid);
+}
+
 no Moose;
 1;

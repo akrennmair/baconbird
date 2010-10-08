@@ -438,5 +438,24 @@ sub get_user_name {
 	return $self->user_name;
 }
 
+sub toggle_favorite {
+	my $self = shift;
+	my ($tweetid) = @_;
+	if ($self->is_direct_message) {
+		die "you can't favorite a direct message.\n";
+	} else {
+		my $tweet = $self->all_messages->{$tweetid};
+		if (defined($tweet)) {
+			if ($tweet->{favorited}) {
+				$self->nt->destroy_favorite($tweetid);
+				$tweet->{favorited} = JSON::XS::false;
+			} else {
+				$self->nt->create_favorite($tweetid);
+				$tweet->{favorited} = JSON::XS::true;
+			}
+		}
+	}
+}
+
 no Moose;
 1;
