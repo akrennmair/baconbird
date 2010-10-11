@@ -4,6 +4,8 @@ use Moose;
 use stfl;
 use HTML::Strip;
 
+use BaconBird::KeyMap;
+
 use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
@@ -85,9 +87,9 @@ sub next_event {
 		return;
 	}
 
-	if ($e eq "q") {
+	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
 		$self->ctrl->quit(1);
-	} elsif ($e eq "ENTER") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
 			$self->set_shorthelp(HELP_DM_USERNAME);
 			$self->allow_shorten(0);
@@ -123,44 +125,44 @@ sub next_event {
 			$self->saved_rcpt($rcpt);
 			$self->do_reply(0);
 		}
-	} elsif ($e eq "^R") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RETWEET)) {
 		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
 			$self->status_msg("Retweeting...");
 			$self->ctrl->retweet($tweetid);
 			$self->status_msg("Retweeted.");
 		}
-	} elsif ($e eq "r") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REPLY)) {
 		$self->do_reply(0);
-	} elsif ($e eq "R") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_PUBLICREPLY)) {
 		$self->do_reply(1);
-	} elsif ($e eq "^O") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHORTEN)) {
 		if ($self->f->get_focus eq "tweetinput") {
 			$self->shorten;
 		}
-	} elsif ($e eq "1") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HOME_TIMELINE)) {
 		$self->load_timeline(BaconBird::Model::HOME_TIMELINE);
-	} elsif ($e eq "2") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MENTIONS)) {
 		$self->load_timeline(BaconBird::Model::MENTIONS);
-	} elsif ($e eq "3") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DIRECT_MESSAGES)) {
 		$self->load_timeline(BaconBird::Model::DIRECT_MESSAGES);
-	} elsif ($e eq "4") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH_RESULTS)) {
 		my $searchphrase = $self->ctrl->get_search_phrase;
 		if (defined($searchphrase) && $searchphrase ne "") {
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		} else {
 			$self->status_msg("No search results to view.");
 		}
-	} elsif ($e eq "5") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_USER_TIMELINE)) {
 		my $screen_name = $self->ctrl->get_user_name;
 		if (defined($screen_name) && $screen_name ne "") {
 			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 		} else {
 			$self->status_msg("No user timeline to view.");
 		}
-	} elsif ($e eq "/") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH)) {
 		$self->set_input_field("Search: ", "", "end-input-search");
-	} elsif ($e eq "u") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
 		$self->show_user_timeline;
 	} elsif ($e eq "end-input-search") {
 		my $searchphrase = $self->f->get("inputfield");
@@ -169,7 +171,7 @@ sub next_event {
 			$self->ctrl->set_search_phrase($searchphrase);
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		}
-	} elsif ($e eq "F") {
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_TOGGLE_FAVORITE)) {
 		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
 			$self->ctrl->toggle_favorite($tweetid);

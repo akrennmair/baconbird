@@ -9,15 +9,18 @@ use BaconBird::Controller;
 use BaconBird::Model;
 use BaconBird::View;
 use BaconBird::Shortener;
+use BaconBird::KeyMap;
 
 my $ctrl = BaconBird::Controller->new();
 my $model = BaconBird::Model->new(ctrl => $ctrl);
 my $view = BaconBird::View->new(ctrl => $ctrl);
 my $shortener = BaconBird::Shortener->new();
+my $keymap = BaconBird::KeyMap->new();
 
 $ctrl->model($model);
 $ctrl->view($view);
 $ctrl->shortener($shortener);
+$ctrl->keymap($keymap);
 
 $ctrl->run;
 

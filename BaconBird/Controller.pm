@@ -18,6 +18,11 @@ has 'shortener' => (
 	isa => 'BaconBird::Shortener',
 );
 
+has 'keymap' => (
+	is => 'rw',
+	isa => 'BaconBird::KeyMap',
+);
+
 has 'pinfile' => (
 	is => 'rw',
 	isa => 'Str',
@@ -213,6 +218,12 @@ sub toggle_favorite {
 	my $self = shift;
 	my ($tweetid) = @_;
 	$self->model->toggle_favorite($tweetid);
+}
+
+sub key {
+	my $self = shift;
+	my ($op) = @_;
+	return $self->keymap->key($op);
 }
 
 no Moose;
