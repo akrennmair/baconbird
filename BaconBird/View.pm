@@ -547,7 +547,7 @@ sub show_help {
 
 	foreach my $h (@{$self->ctrl->get_help_desc}) {
 		my $str = sprintf("%s %s %s", $h->{key}, " " x (8 - length($h->{key})), $h->{desc});
-		$list .= "{list text:" . stfl::quote($str)) . "}";
+		$list .= "{list text:" . stfl::quote($str) . "}";
 	}
 
 	$list .= "}";
