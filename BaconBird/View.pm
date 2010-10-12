@@ -9,10 +9,46 @@ use BaconBird::KeyMap;
 use constant PROGRAM_VERSION => "0.2";
 use constant TWITTER_MAX_LEN => 140;
 
-use constant HELP_TIMELINE => "q:Quit ENTER:New Tweet ^R:Retweet r:Reply R:Public Reply /:Search u:User F:Favorite 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
-use constant HELP_DM => "q:Quit ENTER:New DM r:Reply /:Search u:User 1:Home Timeline 2:Mentions 3:Direct Messages 4:Search Results 5:User Timeline";
-use constant HELP_TWEET => "ESC:Cancel ENTER:Send ^O:Shorten URLs";
-use constant HELP_DM_USERNAME => "ESC:Cancel ENTER:Confirm";
+use constant HELP_TIMELINE => [
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit" },
+	{ key => BaconBird::KeyMap::KEY_SEND, desc => "New Tweet" },
+	{ key => BaconBird::KeyMap::KEY_RETWEET, desc => "Retweet" },
+	{ key => BaconBird::KeyMap::KEY_REPLY, desc => "Reply" },
+	{ key => BaconBird::KeyMap::KEY_PUBLICREPLY, desc => "Public Reply" },
+	{ key => BaconBird::KeyMap::KEY_SEARCH, desc => "Search" },
+	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "User" },
+	{ key => BaconBird::KeyMap::KEY_TOGGLE_FAVORITE, desc => "Favorite" },
+	{ key => BaconBird::KeyMap::KEY_HOME_TIMELINE, desc => "Home Timeline "},
+	{ key => BaconBird::KeyMap::KEY_MENTIONS, desc => "Mentions" },
+	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
+	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
+	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
+];
+
+
+use constant HELP_DM => [
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit" },
+	{ key => BaconBird::KeyMap::KEY_SEND, desc => "New DM" },
+	{ key => BaconBird::KeyMap::KEY_REPLY, desc => "Reply" },
+	{ key => BaconBird::KeyMap::KEY_SEARCH, desc => "Search" },
+	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "User" },
+	{ key => BaconBird::KeyMap::KEY_HOME_TIMELINE, desc => "Home Timeline "},
+	{ key => BaconBird::KeyMap::KEY_MENTIONS, desc => "Mentions" },
+	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
+	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
+	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
+];
+
+use constant HELP_TWEET => [
+	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
+	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Send" },
+	{ key => BaconBird::KeyMap::KEY_SHORTEN, desc => "Shorten URLs" },
+];
+
+use constant HELP_DM_USERNAME => [
+	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
+	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Confirm" },
+];
 
 use Data::Dumper;
 
@@ -414,7 +450,8 @@ sub send_dm {
 
 sub set_shorthelp {
 	my $self = shift;
-	my ($text) = @_;
+	my ($data) = @_;
+	my $text = join(" ", map { $self->ctrl->key($_->{key}) . ":" . $_->{desc} } @$data);
 	$self->f->set("shorthelp", $text);
 }
 

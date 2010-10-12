@@ -13,10 +13,12 @@ use constant KEY_HOME_TIMELINE => 6;
 use constant KEY_MENTIONS => 7;
 use constant KEY_DIRECT_MESSAGES => 8;
 use constant KEY_SEARCH_RESULTS => 9;
-use constant KEY_USER_TIMELINE=> 10;
+use constant KEY_USER_TIMELINE => 10;
 use constant KEY_SEARCH => 11;
 use constant KEY_SHOW_USER => 12;
 use constant KEY_TOGGLE_FAVORITE => 13;
+use constant KEY_CANCEL => 14;
+use constant KEY_ENTER => 15;
 
 has 'keymap' => (
 	is => 'rw',
@@ -40,6 +42,8 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_SEARCH => "/",
 		BaconBird::KeyMap::KEY_SHOW_USER => "u",
 		BaconBird::KeyMap::KEY_TOGGLE_FAVORITE => "F",
+		BaconBird::KeyMap::KEY_CANCEL => "ESC", # TODO: prevent that this can be redefined.
+		BaconBird::KeyMap::KEY_ENTER => "ENTER", # TODO: same here
 	});
 }
 
