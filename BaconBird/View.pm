@@ -11,6 +11,7 @@ use constant TWITTER_MAX_LEN => 140;
 
 use constant HELP_TIMELINE => [
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit" },
+	{ key => BaconBird::KeyMap::KEY_HELP, desc => "Help" },
 	{ key => BaconBird::KeyMap::KEY_SEND, desc => "New Tweet" },
 	{ key => BaconBird::KeyMap::KEY_RETWEET, desc => "Retweet" },
 	{ key => BaconBird::KeyMap::KEY_REPLY, desc => "Reply" },
@@ -28,6 +29,7 @@ use constant HELP_TIMELINE => [
 
 use constant HELP_DM => [
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit" },
+	{ key => BaconBird::KeyMap::KEY_HELP, desc => "Help" },
 	{ key => BaconBird::KeyMap::KEY_SEND, desc => "New DM" },
 	{ key => BaconBird::KeyMap::KEY_REPLY, desc => "Reply" },
 	{ key => BaconBird::KeyMap::KEY_SEARCH, desc => "Search" },
@@ -48,6 +50,10 @@ use constant HELP_TWEET => [
 use constant HELP_DM_USERNAME => [
 	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
 	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Confirm" },
+];
+
+use constant HELP_HELP => [
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit Help" },
 ];
 
 use Data::Dumper;
@@ -74,6 +80,18 @@ has 'allow_shorten' => (
 	is => 'rw',
 	isa => 'Bool',
 	default => 1,
+);
+
+has 'is_help' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
+
+has 'timeline' => (
+	is => 'rw',
+	isa => 'Int',
+	default => BaconBird::Model::HOME_TIMELINE,
 );
 
 sub BUILD {
@@ -123,7 +141,11 @@ sub next_event {
 		return;
 	}
 
-	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+	if ($self->is_help) {
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+			$self->close_help;
+		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
 		$self->ctrl->quit(1);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
@@ -213,6 +235,8 @@ sub next_event {
 			$self->ctrl->toggle_favorite($tweetid);
 			$self->get_timeline;
 		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HELP)) {
+		$self->show_help;
 	}
 }
 
@@ -335,7 +359,8 @@ sub set_caption {
 					BaconBird::Model::MENTIONS => "Mentions", 
 					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages",
 					BaconBird::Model::SEARCH_RESULTS => "Search Results",
-					BaconBird::Model::USER_TIMELINE => "User Timeline" );
+					BaconBird::Model::USER_TIMELINE => "User Timeline",
+					BaconBird::Model::HELP => "Help");
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 
@@ -478,13 +503,6 @@ sub load_timeline {
 	my $self = shift;
 	my ($tl) = @_;
 
-	my %shorthelp_map = ( 
-		BaconBird::Model::USER_TIMELINE => HELP_TIMELINE, 
-		BaconBird::Model::SEARCH_RESULTS => HELP_TIMELINE, 
-		BaconBird::Model::DIRECT_MESSAGES => HELP_DM, 
-		BaconBird::Model::MENTIONS => HELP_TIMELINE, 
-		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
-	);
 	my %statusmsg_map = ( 
 		BaconBird::Model::USER_TIMELINE => "Loading user timeline...", 
 		BaconBird::Model::SEARCH_RESULTS => "Loading search results...", 
@@ -493,11 +511,58 @@ sub load_timeline {
 		BaconBird::Model::HOME_TIMELINE => "Loading home timeline...", 
 	);
 
-	$self->set_shorthelp($shorthelp_map{$tl});
+	$self->set_shorthelp_by_tl($tl);
 	$self->status_msg($statusmsg_map{$tl});
 	$self->select_timeline($tl);
 	$self->get_timeline;
+	$self->timeline($tl);
 	$self->status_msg("");
+}
+
+sub set_shorthelp_by_tl {
+	my $self = shift;
+	my ($tl) = @_;
+
+	my %shorthelp_map = ( 
+		BaconBird::Model::USER_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::SEARCH_RESULTS => HELP_TIMELINE, 
+		BaconBird::Model::DIRECT_MESSAGES => HELP_DM, 
+		BaconBird::Model::MENTIONS => HELP_TIMELINE, 
+		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
+	);
+
+	$self->set_shorthelp($shorthelp_map{$tl});
+}
+
+sub show_help {
+	my $self = shift;
+
+	$self->is_help(1);
+	$self->set_shorthelp(HELP_HELP);
+	$self->set_caption(BaconBird::Model::HELP);
+	$self->f->set("infoline", ">> ");
+	$self->f->modify("tweets", "replace", "{textview[help] }");
+
+	my $list = "{list";
+
+	foreach my $h (@{$self->ctrl->get_help_desc}) {
+		my $str = sprintf("%s %s %s", $h->{key}, " " x (8 - length($h->{key})), $h->{desc});
+		$list .= "{list text:" . stfl::quote($str)) . "}";
+	}
+
+	$list .= "}";
+
+	$self->f->modify("help", "replace_inner", $list);
+}
+
+sub close_help {
+	my $self = shift;
+	$self->is_help(0);
+
+	$self->f->modify("help", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0}");
+	# TODO: set_shorthelp
+	$self->set_shorthelp_by_tl($self->timeline);
+	$self->get_timeline;
 }
 
 no Moose;

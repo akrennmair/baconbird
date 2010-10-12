@@ -14,6 +14,7 @@ use constant MENTIONS => 2;
 use constant DIRECT_MESSAGES => 3;
 use constant SEARCH_RESULTS => 4;
 use constant USER_TIMELINE => 5;
+use constant HELP => 6;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);

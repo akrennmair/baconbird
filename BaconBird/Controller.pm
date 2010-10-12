@@ -226,5 +226,10 @@ sub key {
 	return $self->keymap->key($op);
 }
 
+sub get_help_desc {
+	my $self = shift;
+	return $self->keymap->get_help_desc;
+}
+
 no Moose;
 1;
