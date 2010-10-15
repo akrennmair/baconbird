@@ -47,7 +47,7 @@ use constant HELP_TWEET => [
 	{ key => BaconBird::KeyMap::KEY_SHORTEN, desc => "Shorten URLs" },
 ];
 
-use constant HELP_DM_USERNAME => [
+use constant HELP_USERNAME => [
 	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
 	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Confirm" },
 ];
@@ -149,7 +149,7 @@ sub next_event {
 		$self->ctrl->quit(1);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
-			$self->set_shorthelp(HELP_DM_USERNAME);
+			$self->set_shorthelp(HELP_USERNAME);
 			$self->allow_shorten(0);
 			$self->set_input_field("DM to: ", "", "end-input-rcpt");
 		} else {
@@ -237,6 +237,27 @@ sub next_event {
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HELP)) {
 		$self->show_help;
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW)) {
+		$self->follow;
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_UNFOLLOW)) {
+		$self->unfollow;
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW_USER)) {
+		$self->set_shorthelp(HELP_USERNAME);
+		$self->allow_shorten(0);
+		$self->set_input_field("User to follow: ", "", "end-input-follow-user");
+	} elsif ($e eq "end-input-follow-user") {
+		my $screen_name = $self->f->get("inputfield");
+		$self->set_lastline;
+		if ($self->ctrl->is_direct_message) {
+			$self->set_shorthelp(HELP_DM);
+		} else {
+			$self->set_shorthelp(HELP_TIMELINE);
+		}
+		if (defined($screen_name) && $screen_name ne "") {
+			$self->status_msg("Following $screen_name...");
+			$self->ctrl->follow_user($screen_name);
+			$self->status_msg("");
+		}
 	}
 }
 
@@ -482,20 +503,11 @@ sub set_shorthelp {
 
 sub show_user_timeline {
 	my $self = shift;
-	my $tweetid = $self->f->get("tweetid");
-	return if !defined($tweetid) || $tweetid eq "";
 
-	my $screen_name;
-
-	if ($self->ctrl->is_direct_message) {
-		$screen_name = $self->ctrl->get_dm_by_id($tweetid)->{sender}{screen_name};
-	} else {
-		my $tweet = $self->ctrl->get_message_by_id($tweetid);
-		$screen_name = $tweet->{user}{screen_name} || $tweet->{from_user};
-	}
+	my $screen_name = $self->get_current_tweet_screen_name;
+	die "couldn't determine current tweet's screen name." unless defined($screen_name);
 
 	$self->ctrl->set_user_name($screen_name);
-
 	$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 }
 
@@ -563,6 +575,46 @@ sub close_help {
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
+}
+
+sub follow {
+	my $self = shift;
+
+	my $screen_name = $self->get_current_tweet_screen_name;
+	die "couldn't determine current tweet's screen name." unless defined($screen_name);
+
+	$self->status_msg("Following $screen_name...");
+	$self->ctrl->follow_user($screen_name);
+	$self->status_msg("");
+}
+
+sub unfollow {
+	my $self = shift;
+
+	my $screen_name = $self->get_current_tweet_screen_name;
+	die "couldn't determine current tweet's screen name." unless defined($screen_name);
+
+	$self->status_msg("Unfollowing $screen_name...");
+	$self->ctrl->unfollow_user($screen_name);
+	$self->status_msg("");
+}
+
+sub get_current_tweet_screen_name {
+	my $self = shift;
+
+	my $tweetid = $self->f->get("tweetid");
+	return undef if !defined($tweetid) || $tweetid eq "";
+
+	my $screen_name;
+
+	if ($self->ctrl->is_direct_message) {
+		$screen_name = $self->ctrl->get_dm_by_id($tweetid)->{sender}{screen_name};
+	} else {
+		my $tweet = $self->ctrl->get_message_by_id($tweetid);
+		$screen_name = $tweet->{user}{screen_name} || $tweet->{from_user};
+	}
+
+	return $screen_name;
 }
 
 no Moose;

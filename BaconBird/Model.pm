@@ -458,5 +458,17 @@ sub toggle_favorite {
 	}
 }
 
+sub follow_user {
+	my $self = shift;
+	my ($screen_name) = @_;
+	$self->nt->create_friend({ screen_name => $screen_name });
+}
+
+sub unfollow_user {
+	my $self = shift;
+	my ($screen_name) = @_;
+	$self->nt->destroy_friend({ screen_name => $screen_name });
+}
+
 no Moose;
 1;

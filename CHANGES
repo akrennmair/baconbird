@@ -1,6 +1,7 @@
 Changes for baconbird:
 
 0.2:
+	Added keys to follow and unfollow other users.
 	Added help screen.
 	Added key to toggle favorite flag on tweets.
 	Added key to show user timeline.

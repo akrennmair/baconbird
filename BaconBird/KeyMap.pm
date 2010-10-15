@@ -20,6 +20,9 @@ use constant KEY_TOGGLE_FAVORITE => 13;
 use constant KEY_CANCEL => 14;
 use constant KEY_ENTER => 15;
 use constant KEY_HELP => 16;
+use constant KEY_FOLLOW => 17;
+use constant KEY_UNFOLLOW => 18;
+use constant KEY_FOLLOW_USER => 19;
 
 has 'keymap' => (
 	is => 'rw',
@@ -42,10 +45,13 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_USER_TIMELINE => { key => "5", desc => "Go to user timeline (if show user function was used before)" },
 		BaconBird::KeyMap::KEY_SEARCH => { key => "/", desc => "Start new search" },
 		BaconBird::KeyMap::KEY_SHOW_USER => { key => "u", desc => "Show timeline of currently selected tweet's author" },
-		BaconBird::KeyMap::KEY_TOGGLE_FAVORITE => { key => "F", desc => "Toggle favorite flag of currently selected tweet" },
+		BaconBird::KeyMap::KEY_TOGGLE_FAVORITE => { key => "^F", desc => "Toggle favorite flag of currently selected tweet" },
 		BaconBird::KeyMap::KEY_CANCEL => { key => "ESC", internal => 1 },
 		BaconBird::KeyMap::KEY_ENTER => { key => "ENTER", internal => 1 },
 		BaconBird::KeyMap::KEY_HELP => { key => '?', desc => "Show help" },
+		BaconBird::KeyMap::KEY_FOLLOW => { key => 'F', desc => 'Follow author of currently selected tweet' },
+		BaconBird::KeyMap::KEY_UNFOLLOW => { key => 'U', desc => 'Unfollow author of currently selected tweet' },
+		BaconBird::KeyMap::KEY_FOLLOW_USER => { key => 'f', desc => 'Follow a user. You will be asked for the user name.' },
 	});
 }
 

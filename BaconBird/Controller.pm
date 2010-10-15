@@ -231,5 +231,17 @@ sub get_help_desc {
 	return $self->keymap->get_help_desc;
 }
 
+sub follow_user {
+	my $self = shift;
+	my ($screen_name) = @_;
+	$self->model->follow_user($screen_name);
+}
+
+sub unfollow_user {
+	my $self = shift;
+	my ($screen_name) = @_;
+	$self->model->unfollow_user($screen_name);
+}
+
 no Moose;
 1;
