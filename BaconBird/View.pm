@@ -138,21 +138,21 @@ EOT
 sub next_event {
 	my $self = shift;
 
+
 	my $e = $self->f->run(10000);
+	$self->f->run(-1);
 
-	if (!defined($e)) {
-		$self->f->run(-1);
-		if ($self->f->get_focus eq "tweetinput") {
-			$self->set_remaining($self->f->get("inputfield"));
-		}
-		if ($self->f->get_focus eq "tweets") {
-			$self->update_info_line($self->f->get("tweetid"));
-		}
-		$self->update_view($self->f->get("tweetid"));
-		return;
+	my $tweetid = $self->f->get("tweetid");
+
+	if ($self->f->get_focus eq "tweetinput") {
+		$self->set_remaining($self->f->get("inputfield"));
 	}
+	if ($self->f->get_focus eq "tweets") {
+		$self->update_info_line($tweetid);
+	}
+	$self->update_view($tweetid);
 
-	$self->update_view($self->f->get("tweetid"));
+	return unless defined($e);
 
 	if ($self->is_help) {
 		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
@@ -197,7 +197,6 @@ sub next_event {
 			$self->do_reply(0);
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RETWEET)) {
-		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
 			$self->status_msg("Retweeting...");
 			$self->ctrl->retweet($tweetid);
@@ -243,7 +242,6 @@ sub next_event {
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_TOGGLE_FAVORITE)) {
-		my $tweetid = $self->f->get("tweetid");
 		if (defined($tweetid) && $tweetid ne "") {
 			$self->ctrl->toggle_favorite($tweetid);
 			$self->get_timeline;
@@ -279,12 +277,12 @@ sub next_event {
 sub prepare {
 	my $self = shift;
 
+	my $tweetid = $self->f->get("tweetid");
+
 	if ($self->f->get_focus eq "tweets") {
-		$self->update_info_line($self->f->get("tweetid"));
+		$self->update_info_line($tweetid);
 	}
-	if ($self->f->get("displayview") eq "1") {
-		$self->update_view($self->f->get("tweetid"));
-	}
+	$self->update_view($tweetid);
 }
 
 sub status_msg {
@@ -304,8 +302,8 @@ sub set_input_field {
 	my $self = shift;
 	my ($label, $default_text, $end_input_event) = @_;
 
-	$default_text = "" if !defined($default_text);
-	$end_input_event = "end-input" if !defined($end_input_event);
+	$default_text = "" unless defined($default_text);
+	$end_input_event = "end-input" unless defined($end_input_event);
 
 	my $pos = length($default_text);
 
@@ -652,6 +650,8 @@ sub update_view {
 	my $self = shift;
 	my ($tweetid) = @_;
 
+	return unless defined($tweetid);
+
 	my @lines;
 
 	if ($self->ctrl->is_direct_message) {
@@ -670,7 +670,6 @@ sub update_view {
 	}
 
 	$self->f->modify("tweetview", "replace_inner", $self->stfl_listify(\@lines));
-	$self->f->run(-1);
 }
 
 sub fill_user {
