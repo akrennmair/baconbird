@@ -233,6 +233,8 @@ These are the default keybindings. You can always type C<?> to display the curre
 
 =item * C<v>: Toggle detail view of currently selected tweet.
 
+=item * C<Ctrl-L>: Redraw screen.
+
 =back
 
 

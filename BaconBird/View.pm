@@ -271,6 +271,8 @@ sub next_event {
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
 		$self->toggle_view;
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REDRAW)) {
+		stfl::reset();
 	}
 }
 

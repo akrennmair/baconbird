@@ -24,6 +24,7 @@ use constant KEY_FOLLOW => 17;
 use constant KEY_UNFOLLOW => 18;
 use constant KEY_FOLLOW_USER => 19;
 use constant KEY_VIEW => 20;
+use constant KEY_REDRAW => 21;
 
 has 'keymap' => (
 	is => 'rw',
@@ -54,6 +55,7 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_UNFOLLOW => { key => 'U', desc => 'Unfollow author of currently selected tweet' },
 		BaconBird::KeyMap::KEY_FOLLOW_USER => { key => 'f', desc => 'Follow a user. You will be asked for the user name.' },
 		BaconBird::KeyMap::KEY_VIEW => { key => 'v', desc => 'Toggle detail view of current tweet.' },
+		BaconBird::KeyMap::KEY_REDRAW => { key => '^L', desc => 'Redraw screen.' },
 	});
 }
 
