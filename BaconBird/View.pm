@@ -3,6 +3,7 @@ use Moose;
 
 use stfl;
 use HTML::Strip;
+use Text::Wrap;
 
 use BaconBird::KeyMap;
 
@@ -98,18 +99,27 @@ sub BUILD {
 	my $self = shift;
 
 	$self->f(stfl::create( <<"EOT" ));
-vbox
+vbox[root]
   hbox
     .expand:0
     \@style_normal:bg=blue,fg=white,attr=bold
     label text[program]:"" .expand:0
     label text[current_view]:"" .expand:h
     label .tie:r text[rateinfo]:"-1/-1" .expand:0
-  list[tweets]
-    style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
+  vbox
     .expand:vh
-    pos_name[tweetid]:
-    pos[tweetpos]:0
+    list[tweets]
+      style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
+      .expand:vh
+      pos_name[tweetid]:
+      pos[tweetpos]:0
+    vbox 
+      .display[displayview]:0
+      .expand:0
+      label .expand:0 .height:1 style_normal:bg=blue
+      textview[tweetview]
+        .expand:v
+      .height[viewheight]:10
   vbox
     .expand:0
     .display:1
@@ -138,8 +148,11 @@ sub next_event {
 		if ($self->f->get_focus eq "tweets") {
 			$self->update_info_line($self->f->get("tweetid"));
 		}
+		$self->update_view($self->f->get("tweetid"));
 		return;
 	}
+
+	$self->update_view($self->f->get("tweetid"));
 
 	if ($self->is_help) {
 		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
@@ -258,6 +271,8 @@ sub next_event {
 			$self->ctrl->follow_user($screen_name);
 			$self->status_msg("");
 		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
+		$self->toggle_view;
 	}
 }
 
@@ -266,6 +281,9 @@ sub prepare {
 
 	if ($self->f->get_focus eq "tweets") {
 		$self->update_info_line($self->f->get("tweetid"));
+	}
+	if ($self->f->get("displayview") eq "1") {
+		$self->update_view($self->f->get("tweetid"));
 	}
 }
 
@@ -364,6 +382,7 @@ sub get_timeline {
 	if (defined($self->f->get_focus) && $self->f->get_focus ne "tweetinput") {
 		$self->update_info_line($self->f->get("tweetid"));
 	}
+	$self->update_view($self->f->get("tweetid"));
 }
 
 sub select_timeline {
@@ -615,6 +634,96 @@ sub get_current_tweet_screen_name {
 	}
 
 	return $screen_name;
+}
+
+sub toggle_view {
+	my $self = shift;
+
+	my $enabled = $self->f->get("displayview");
+
+	if ($enabled eq "0") {
+		$self->f->set("displayview", "1");
+	} else {
+		$self->f->set("displayview", "0");
+	}
+}
+
+sub update_view {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	my @lines;
+
+	if ($self->ctrl->is_direct_message) {
+		my $dm = $self->ctrl->get_dm_by_id($tweetid);
+
+		push(@lines, $self->split_lines($dm->{text}, int($self->f->get("root:w"))));
+		push(@lines, "");
+		push(@lines, $self->fill_user($dm->{sender}{screen_name}, $dm->{sender}));
+
+	} else {
+		my $tweet = $self->ctrl->get_message_by_id($tweetid);
+
+		push(@lines, $self->split_lines($tweet->{text}, int($self->f->get("root:w"))));
+		push(@lines, "");
+		push(@lines, $self->fill_user($tweet->{user}{screen_name} || $tweet->{from_user}, $tweet->{user}));
+	}
+
+	$self->f->modify("tweetview", "replace_inner", $self->stfl_listify(\@lines));
+	$self->f->run(-1);
+}
+
+sub fill_user {
+	my $self = shift;
+	my ($screen_name, $user) = @_;
+
+	my $width = int($self->f->get("root:w"));
+
+	my @lines;
+
+	my $name_line = '@' . $screen_name;
+	$name_line .= ' ' . $user->{name} if $user->{name};
+	$name_line .= " - " . $user->{location} if $user->{location};
+	push(@lines, $self->split_lines($name_line, $width));
+
+	push(@lines, $self->split_lines($user->{description}, $width)) if $user->{description};
+	push(@lines, $self->split_lines($user->{url}, $width)) if $user->{url};
+
+	my @numbers;
+	push(@numbers, $user->{statuses_count} . " Tweets") if $user->{statuses_count};
+	push(@numbers, $user->{friends_count} . " Following") if $user->{friends_count};
+	push(@numbers, $user->{followers_count} . " Followers") if $user->{followers_count};
+	push(@numbers, $user->{listed_count} . " Listed") if $user->{listed_count};
+
+	push(@lines, $self->split_lines(join(" | ", @numbers), $width)) if scalar(@numbers) > 0;
+
+	return @lines;
+}
+
+sub split_lines {
+	my $self = shift;
+	my ($text, $width) = @_;
+
+	my $old_width = $Text::Wrap::columns;
+
+	$Text::Wrap::columns = $width;
+	my @lines = split("\n", wrap('', '', $text));
+	$Text::Wrap::columns = $old_width;
+
+	return @lines;
+}
+
+sub stfl_listify {
+	my $self = shift;
+	my ($items) = @_;
+
+	my $result = "{list ";
+
+	foreach my $line (@$items) {
+		$result .= "{listitem text:" . stfl::quote($line) . "}";
+	}
+
+	return $result . "}";
 }
 
 no Moose;
