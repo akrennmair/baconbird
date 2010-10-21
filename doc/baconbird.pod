@@ -43,6 +43,8 @@ listed below:
 
 =item * HTML::Strip
 
+=item * IO::Socket::SSL
+
 =back
 
 =back
@@ -160,8 +162,78 @@ don't follow the addressed user, can read the reply.
 
 =head4 Searching
 
-As mentioned above, baconbird allows searching for phrases by pressing C</>. 
-The search results will then be regularly updated.
+As mentioned above, baconbird allows searching for phrases by pressing C</>.
+The search results will then be regularly updated. The latest result for the
+last search can be always retrieved by pressing C<5>.
+
+=head4 Detail View
+
+To see a complete, more detailed view of a tweet, press C<v> and a panel will
+pop up on the lower part of the screen. Not only will it show the complete text
+of the tweet (line-wrapped, in case your terminal is not wide enough), you will
+also find additional information about the author, including name, screen name,
+location, description, URL and number of tweets, followers and friends.
+Pressing C<v> again hides the detail view.
+
+=head4 Favorites
+
+If you want to favorite a tweet, you can select it and press C<Ctrl-F>.
+Favorited tweets will be marked with a "!" in the leftmost column of the
+screen. To unfavorite a previously favorited tweet, press C<Ctrl-F> again.
+
+=head4 Following and Unfollowing
+
+There are two ways to follow another user. You can either follow the author of
+the currently selected tweet or direct message (just press C<F>), or you can
+follow any user by pressing C<f> and entering the desired screen name.
+
+To unfollow a user, select a tweet or direct message and press C<U>.
+
+=head2 Keybindings
+
+These are the default keybindings. You can always type C<?> to display the current bindings.
+
+=over 12
+
+=item * C<q>: Quit baconbird.
+
+=item * C<ENTER>: Send a new tweet or direct message.
+
+=item * C<Ctrl-R>: Reteet currently selected tweet.
+
+=item * C<r>: Reply to currently selected tweet or direct message.
+
+=item * C<R>: Publicly reply to currently selected tweet.
+
+=item * C<Ctrl-O>: Shorten all URLs in the current input field.
+
+=item * C<1>: Go to home timeline.
+
+=item * C<2>: Go to mentions.
+
+=item * C<3>: Go to direct messages.
+
+=item * C<4>: Go to search results (if search function was used before).
+
+=item * C<5>: Go to user timeline (if show user function was used before).
+
+=item * C</>: Start new search.
+
+=item * C<u>: Show timeline of currently selected tweet's author.
+
+=item * C<Ctrl-F>: Toggle favorite flag of currently selected tweet.
+
+=item * C<?>: Show help.
+
+=item * C<F>: Follow author of currently selected tweet.
+
+=item * C<U>: Unfollow author of currently selected tweet.
+
+=item * C<f>: Follow a user. You will be asked for the user name.
+
+=item * C<v>: Toggle detail view of currently selected tweet.
+
+=back
 
 
 =head2 License
