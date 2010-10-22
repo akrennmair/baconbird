@@ -7,7 +7,7 @@ use Text::Wrap;
 
 use BaconBird::KeyMap;
 
-use constant PROGRAM_VERSION => "0.2";
+use constant PROGRAM_VERSION => "0.3";
 use constant TWITTER_MAX_LEN => 140;
 
 use constant HELP_TIMELINE => [
