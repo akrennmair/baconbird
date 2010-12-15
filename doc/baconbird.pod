@@ -45,6 +45,8 @@ listed below:
 
 =item * IO::Socket::SSL
 
+=item * Config::General
+
 =back
 
 =back
@@ -233,7 +235,22 @@ These are the default keybindings. You can always type C<?> to display the curre
 
 =item * C<v>: Toggle detail view of currently selected tweet.
 
+=item * C<o>: Open URLs in tweet in default browser.
+
 =item * C<Ctrl-L>: Redraw screen.
+
+=back
+
+=head2 Configuration
+
+baconbird is configured by $HOME/.baconbird/config. The following configuration
+options are supported:
+
+=over
+
+=item * browser
+
+	browser = "links %u"
 
 =back
 
