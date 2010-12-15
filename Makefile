@@ -8,7 +8,7 @@ POD2HTML=pod2html
 
 MAINFILE=baconbird
 MODULE_DIRS=BaconBird WWW
-PERL_MODULES=Moose Net::Twitter WWW::Shorten URI::Find HTML::Strip stfl IO::Socket::SSL URI::Find
+PERL_MODULES=Moose Net::Twitter WWW::Shorten URI::Find HTML::Strip stfl IO::Socket::SSL
 
 HTMLFILE=doc/baconbird.html
 PODFILE=doc/baconbird.pod
