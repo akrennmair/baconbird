@@ -39,6 +39,11 @@ has 'quit' => (
 	isa => 'Bool',
 );
 
+has 'config' => (
+	is => 'rw',
+	isa => 'BaconBird::Config',
+);
+
 
 sub BUILD {
 	my $self = shift;
@@ -49,6 +54,8 @@ sub BUILD {
 sub run {
 	my $self = shift;
 	my $ts = time + $self->model->get_wait_time;
+
+	$self->config->load;
 
 	eval {
 		$self->login;
@@ -67,7 +74,7 @@ sub run {
 			$self->view->set_rate_limit($self->model->get_rate_limit);
 			$self->view->next_event();
 
-			if (!$self->quit && time >= $ts) {
+			if (time >= $ts && !$self->quit) {
 				$self->reload_all_and_update_view;
 				$ts = time + $self->model->get_wait_time;
 			}

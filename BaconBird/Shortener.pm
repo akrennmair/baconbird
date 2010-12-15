@@ -16,6 +16,11 @@ has 'cache' => (
 	default => sub { { } },
 );
 
+has 'config' => (
+	is => 'rw',
+	isa => 'BaconBird::Config',
+);
+
 sub shorten_text {
 	my $self = shift;
 	my ($text) = @_;
