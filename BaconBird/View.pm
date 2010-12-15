@@ -512,11 +512,9 @@ sub open_url {
 		my $open_url = sub {
 			my ($URI, $text) = @_;
 
-			$self->status_msg("Sending $text to browser...");
-			system("gnome-open $text > /dev/null 2>&1");
-			$self->status_msg("Sent $text to browser");
-			sleep(2);
-			$self->status_msg("");
+			$self->status_msg("Opening $text in browser...");
+			$self->open_url_in_browser($text);
+			$self->status_msg("Opened $text in browser");
 		};
 
 		my $finder = URI::Find->new($open_url);
@@ -763,6 +761,23 @@ sub stfl_listify {
 	}
 
 	return $result . "}";
+}
+
+sub open_url_in_browser {
+	my $self = shift;
+	my ($url) = @_;
+
+	my $browser = $self->config->get_value("browser");
+
+	$url =~ s/"/\\"/g;
+	if ($browser =~ /%u/) {
+		$browser =~ s/%u/"$url"/g;
+	} else {
+		$browser .= '"' . $url . '"';
+	}
+
+	stfl::reset();
+	system($browser);
 }
 
 no Moose;
