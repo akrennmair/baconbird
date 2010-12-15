@@ -280,7 +280,6 @@ sub next_event {
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REDRAW)) {
 		stfl::reset();
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_OPEN_URL)) {
-		my $tweet = $self->f->get("inputfield");
 		$self->open_url($tweetid);
 	}
 }
