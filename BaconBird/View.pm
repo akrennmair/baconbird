@@ -96,6 +96,11 @@ has 'timeline' => (
 	default => BaconBird::Model::HOME_TIMELINE,
 );
 
+has 'config' => (
+	is => 'rw',
+	isa => 'BaconBird::Config',
+);
+
 sub BUILD {
 	my $self = shift;
 

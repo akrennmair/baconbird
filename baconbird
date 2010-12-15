@@ -5,16 +5,21 @@ use warnings;
 use lib ".";
 
 use Data::Dumper;
+use BaconBird::Config;
 use BaconBird::Controller;
 use BaconBird::Model;
 use BaconBird::View;
 use BaconBird::Shortener;
 use BaconBird::KeyMap;
 
-my $ctrl = BaconBird::Controller->new({ keymap => BaconBird::KeyMap->new, shortener => BaconBird::Shortener->new });
+my $cfg = BaconBird::Config->new;
+my $keymap = BaconBird::KeyMap->new(config => $cfg);
+my $shortener = BaconBird::Shortener->new(config => $cfg);
 
-$ctrl->model(BaconBird::Model->new(ctrl => $ctrl));
-$ctrl->view(BaconBird::View->new(ctrl => $ctrl));
+my $ctrl = BaconBird::Controller->new({ keymap => $keymap, shortener => $shortener, config => $cfg });
+
+$ctrl->model(BaconBird::Model->new(ctrl => $ctrl, config => $cfg));
+$ctrl->view(BaconBird::View->new(ctrl => $ctrl, config => $cfg));
 
 $ctrl->run;
 

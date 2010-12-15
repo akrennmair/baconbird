@@ -32,6 +32,11 @@ has 'keymap' => (
 	isa => 'HashRef',
 );
 
+has 'config' => (
+	is => 'rw',
+	isa => 'BaconBird::Config',
+);
+
 sub BUILD {
 	my $self = shift;
 	$self->keymap({

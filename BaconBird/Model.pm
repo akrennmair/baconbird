@@ -128,6 +128,11 @@ has 'user_name' => (
 	isa => 'Str',
 );
 
+has 'config' => (
+	is => 'rw',
+	isa => 'BaconBird::Config',
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
