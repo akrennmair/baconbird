@@ -515,7 +515,13 @@ sub open_url {
 		};
 
 		my $finder = URI::Find->new($open_url);
-		$finder->find(\$text);
+		my $uris_found = $finder->find(\$text);
+
+		if (!$uris_found) {
+			$self->status_msg("No URL found in tweet.");
+			sleep(2);
+			$self->status_msg("");
+		}
 	}
 }
 
