@@ -510,6 +510,8 @@ sub open_url {
 			$self->status_msg("Sending $text to browser...");
 			system("gnome-open $text > /dev/null 2>&1");
 			$self->status_msg("Sent $text to browser");
+			sleep(2);
+			$self->set_input_field("");
 		};
 
 		my $finder = URI::Find->new($open_url);
