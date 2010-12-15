@@ -501,7 +501,7 @@ sub open_url {
 	my ($tweetid) = @_;
 
 	if ($tweetid ne "") {
-		my $tweet = $self->ctrl->get_message_by_id($tweetid);
+		my $tweet = $self->ctrl->get_message_by_id($tweetid) || $self->ctrl->get_dm_by_id($tweetid);
 		my $text = $tweet->text;
 
 		my $open_url = sub {
