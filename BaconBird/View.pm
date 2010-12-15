@@ -772,7 +772,7 @@ sub open_url_in_browser {
 	if ($browser =~ /%u/) {
 		$browser =~ s/%u/"$url"/g;
 	} else {
-		$browser .= '"' . $url . '"';
+		$browser .= ' "' . $url . '"';
 	}
 
 	stfl::reset();
