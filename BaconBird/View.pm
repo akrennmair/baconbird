@@ -4,6 +4,7 @@ use Moose;
 use stfl;
 use HTML::Strip;
 use Text::Wrap;
+use URI::Find;
 
 use BaconBird::KeyMap;
 
@@ -273,6 +274,9 @@ sub next_event {
 		$self->toggle_view;
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REDRAW)) {
 		stfl::reset();
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_OPEN_URL)) {
+		my $tweet = $self->f->get("inputfield");
+		$self->open_url($tweetid);
 	}
 }
 
@@ -490,6 +494,27 @@ sub post_update {
 		$self->status_msg("");
 	}
 	$self->saved_status_id(undef);
+}
+
+sub open_url {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	if ($tweetid ne "") {
+		my $tweet = $self->ctrl->get_message_by_id($tweetid);
+		my $text = $tweet->text;
+
+		my $open_url = sub {
+			my ($URI, $text) = @_;
+
+			$self->status_msg("Sending $text to browser...");
+			system("gnome-open $text > /dev/null 2>&1");
+			$self->status_msg("Sent $text to browser");
+		};
+
+		my $finder = URI::Find->new($open_url);
+		$finder->find(\$text);
+	}
 }
 
 sub send_dm {
