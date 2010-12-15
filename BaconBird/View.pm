@@ -511,7 +511,7 @@ sub open_url {
 			system("gnome-open $text > /dev/null 2>&1");
 			$self->status_msg("Sent $text to browser");
 			sleep(2);
-			$self->set_input_field("");
+			$self->status_msg("");
 		};
 
 		my $finder = URI::Find->new($open_url);
