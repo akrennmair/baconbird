@@ -15,6 +15,7 @@ use constant DIRECT_MESSAGES => 3;
 use constant SEARCH_RESULTS => 4;
 use constant USER_TIMELINE => 5;
 use constant HELP => 6;
+use constant FAVORITES_TIMELINE => 7;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -76,6 +77,12 @@ has 'current_timeline' => (
 	default => HOME_TIMELINE,
 );
 
+has 'favorites_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
 has 'home_timeline_ts' => (
 	is => 'rw',
 	isa => 'Int',
@@ -101,6 +108,12 @@ has 'search_results_ts' => (
 );
 
 has 'user_timeline_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
+has 'favorites_timeline_ts' => (
 	is => 'rw',
 	isa => 'Int',
 	default => 0,
@@ -162,6 +175,8 @@ sub reload_all {
 		$self->reload_search_results;
 	} elsif ($tl == USER_TIMELINE) {
 		$self->reload_user_timeline;
+	} elsif ($tl == FAVORITES_TIMELINE) {
+		$self->reload_favorites_timeline;
 	}
 }
 
@@ -330,6 +345,8 @@ sub select_timeline {
 		} else {
 			$self->current_timeline($old_timeline);
 		}
+	} elsif ($timeline == FAVORITES_TIMELINE) {
+		$self->reload_favorites_timeline if ($self->favorites_timeline_ts + DEFAULT_WAIT_TIME) < time;
 	}
 }
 
@@ -345,6 +362,8 @@ sub get_timeline {
 		return $self->search_results;
 	} elsif ($self->current_timeline == USER_TIMELINE) {
 		return $self->user_timeline;
+	} elsif ($self->current_timeline == FAVORITES_TIMELINE) {
+		return $self->favorites_timeline;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
@@ -473,6 +492,27 @@ sub unfollow_user {
 	my $self = shift;
 	my ($screen_name) = @_;
 	$self->nt->destroy_friend({ screen_name => $screen_name });
+}
+
+sub reload_favorites_timeline {
+	my $self = shift;
+
+	eval {
+		my @favorites;
+		for (my $page = 1; ; ++$page) {
+			my $r = $self->nt->favorites({ page => $page });
+			last unless @$r;
+
+			push @favorites, @$r;
+		}
+
+		$self->add_new_messages(\@favorites);
+		$self->favorites_timeline(\@favorites);
+	};
+	if (my $err = $@) {
+		die "Reloading favorites timeline failed: " . $err->error . "\n";
+	}
+	$self->favorites_timeline_ts(time);
 }
 
 no Moose;
