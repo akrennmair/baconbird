@@ -775,8 +775,9 @@ sub open_url_in_browser {
 		$browser .= ' "' . $url . '"';
 	}
 
-	stfl::reset();
 	system($browser);
+	sleep(1);
+	stfl::reset();
 }
 
 no Moose;
