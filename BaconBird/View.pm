@@ -335,11 +335,19 @@ sub set_timeline {
 	foreach my $tweet (@$tl) {
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
 		my $text;
+
 		if ($tweet->{favorited}) {
 			$text .= "!";
 		} else {
 			$text .= " ";
 		}
+
+		if ($tweet->{retweeted}) {
+			$text .= "#";
+		} else {
+			$text .= " ";
+		}
+
 		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$text =~ s/[\r\n]+/ /g;
 		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
