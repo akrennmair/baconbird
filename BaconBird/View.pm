@@ -533,10 +533,9 @@ sub open_url {
 
 		if (!$uris_found) {
 			$self->status_msg("No URL found in tweet.");
+			sleep(2);
+			$self->status_msg("");
 		}
-
-		sleep(2);
-		$self->status_msg("");
 	}
 }
 
