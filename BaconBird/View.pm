@@ -281,6 +281,8 @@ sub next_event {
 		stfl::reset();
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_OPEN_URL)) {
 		$self->open_url($tweetid);
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FAVORITES)) {
+		$self->load_timeline(BaconBird::Model::FAVORITES_TIMELINE);
 	}
 }
 
@@ -408,7 +410,9 @@ sub set_caption {
 					BaconBird::Model::DIRECT_MESSAGES => "Direct Messages",
 					BaconBird::Model::SEARCH_RESULTS => "Search Results",
 					BaconBird::Model::USER_TIMELINE => "User Timeline",
-					BaconBird::Model::HELP => "Help");
+					BaconBird::Model::HELP => "Help",
+					BaconBird::Model::FAVORITES_TIMELINE => "Favorites Timeline",
+				);
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
 
@@ -575,6 +579,7 @@ sub load_timeline {
 		BaconBird::Model::DIRECT_MESSAGES => "Loading direct messages...", 
 		BaconBird::Model::MENTIONS => "Loading mentions...", 
 		BaconBird::Model::HOME_TIMELINE => "Loading home timeline...", 
+		BaconBird::Model::FAVORITES_TIMELINE => "Loading favorites timeline...", 
 	);
 
 	$self->set_shorthelp_by_tl($tl);
@@ -595,6 +600,7 @@ sub set_shorthelp_by_tl {
 		BaconBird::Model::DIRECT_MESSAGES => HELP_DM, 
 		BaconBird::Model::MENTIONS => HELP_TIMELINE, 
 		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::FAVORITES_TIMELINE => HELP_TIMELINE, 
 	);
 
 	$self->set_shorthelp($shorthelp_map{$tl});
