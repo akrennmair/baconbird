@@ -391,7 +391,8 @@ sub add_new_dms {
 sub get_message_by_id {
 	my $self = shift;
 	my ($id) = @_;
-	return $self->all_messages->{$id};
+	return $self->all_messages->{$id} if $id;
+	return undef;
 }
 
 sub get_dm_by_id {
