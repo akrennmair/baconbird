@@ -101,6 +101,17 @@ has 'config' => (
 	isa => 'BaconBird::Config',
 );
 
+has 'highlight_patterns' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => undef,
+);
+
+has 'hide_patterns' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -115,10 +126,12 @@ vbox[root]
   vbox
     .expand:vh
     list[tweets]
+      \@style_1_normal:fg=yellow,bg=red,attr=bold
       style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
       .expand:vh
       pos_name[tweetid]:
       pos[tweetpos]:0
+      richtext:1
     vbox 
       .display[displayview]:0
       .expand:0
@@ -139,6 +152,28 @@ EOT
 	$self->f->set("program", "[baconbird " . PROGRAM_VERSION . "] ");
 	$self->set_shorthelp(HELP_TIMELINE);
 	$self->set_caption(BaconBird::Model::HOME_TIMELINE);
+	$self->highlight_patterns([ ]);
+	$self->hide_patterns([ ]);
+
+	my $filters = $self->config->get_value("filters");
+	if ($filters) {
+		my $highlight = $filters->{highlight};
+		if (ref($highlight) eq "ARRAY") {
+			foreach my $expr (@$highlight) {
+				push(@{$self->highlight_patterns}, { regex => $expr, id => 1 });
+			}
+		} else {
+				push(@{$self->highlight_patterns}, { regex => $highlight, id => 1 });
+		}
+		my $hide = $filters->{hide};
+		if (ref($hide) eq "ARRAY") {
+			foreach my $expr (@$hide) {
+				push(@{$self->hide_patterns}, { regex => $expr });
+			}
+		} else {
+			push(@{$self->hide_patterns}, { regex => $hide });
+		}
+	}
 }
 
 sub next_event {
@@ -342,7 +377,11 @@ sub set_timeline {
 		}
 		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$text =~ s/[\r\n]+/ /g;
-		$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
+		$text =~ s/\</<>/g;
+		if (!$self->matches_hidden($text)) {
+			$text = $self->highlight_text($text);
+			$list .= "{listitem[" .  $tweet->{id} . "] text:" . stfl::quote($text) . "}";
+		}
 	}
 
 	$list .= "}";
@@ -783,6 +822,28 @@ sub open_url_in_browser {
 
 	stfl::reset();
 	system($browser);
+}
+
+sub highlight_text {
+	my $self = shift;
+	my ($text) = @_;
+	if ($self->highlight_patterns) {
+		foreach my $p (@{$self->highlight_patterns}) {
+			$text =~ s/($p->{regex})/<$p->{id}>$1<\/>/ig;
+		}
+	}
+	return $text;
+}
+
+sub matches_hidden {
+	my $self = shift;
+	my ($text) = @_;
+
+	foreach my $p (@{$self->hide_patterns}) {
+		return 1 if $text =~ /$p->{regex}/i;
+	}
+
+	return undef;
 }
 
 no Moose;

@@ -252,6 +252,15 @@ options are supported:
 
 	browser = "links %u"
 
+=item * filters
+
+	<filters>
+		highlight "foobar"             # highlights all occurences of "foobar"
+		highlight "http?s://[^ ]*"     # highlights all URLs
+		hide "@someuser"               # hides tweets containing "@someuser"
+		hide "quux"                    # hides tweets containing "quux"
+	</filters>
+
 =back
 
 

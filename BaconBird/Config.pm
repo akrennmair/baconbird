@@ -24,17 +24,13 @@ sub BUILD {
 	$self->default_config({
 		"browser"		=> "links %u",
 	});
-	$self->configdata({ });
-}
-
-sub load {
-	my $self = shift;
 	eval {
 		my $conf = new Config::General(-LowerCaseNames => 1, -ConfigFile => $self->configfile);
 		my %config = $conf->getall;
 		$self->configdata(\%config);
 		undef $conf;
 	};
+	warn $@ if $@;
 }
 
 sub get_value {

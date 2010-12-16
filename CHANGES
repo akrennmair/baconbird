@@ -4,6 +4,8 @@ Changes for baconbird:
 	Added configurability through a configuration file.
 	Added favorites timeline.
 	Added "Open URLs in browser" key.
+	Implemented highlighting of phrases within tweets.
+	Implemented filters to hide certain tweets.
 
 0.2 (2010-10-21):
 	Added detailed view of current tweet.
