@@ -26,7 +26,7 @@ use constant HELP_TIMELINE => [
 	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
 	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
 	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
-	{ key => BaconBird::KeyMap::KEY_OPEN_URL, desc => "Open URLs in default browser" },
+	{ key => BaconBird::KeyMap::KEY_OPEN_URL, desc => "Open URLs" },
 ];
 
 use constant HELP_DM => [
