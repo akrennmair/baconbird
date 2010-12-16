@@ -55,8 +55,6 @@ sub run {
 	my $self = shift;
 	my $ts = time + $self->model->get_wait_time;
 
-	$self->config->load;
-
 	eval {
 		$self->login;
 	};
