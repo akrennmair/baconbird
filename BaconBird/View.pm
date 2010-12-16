@@ -343,7 +343,7 @@ sub set_timeline {
 		}
 
 		if ($tweet->{retweeted}) {
-			$text .= "#";
+			$text .= "R";
 		} else {
 			$text .= " ";
 		}
