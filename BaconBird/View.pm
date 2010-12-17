@@ -26,7 +26,7 @@ use constant HELP_TIMELINE => [
 	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
 	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
 	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
-	{ key => BaconBird::KeyMap::KEY_OPEN_URL, desc => "Open URLs in default browser" },
+	{ key => BaconBird::KeyMap::KEY_OPEN_URL, desc => "Open URLs" },
 ];
 
 use constant HELP_DM => [
@@ -370,11 +370,19 @@ sub set_timeline {
 	foreach my $tweet (@$tl) {
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
 		my $text;
+
 		if ($tweet->{favorited}) {
 			$text .= "!";
 		} else {
 			$text .= " ";
 		}
+
+		if ($tweet->{retweeted}) {
+			$text .= "R";
+		} else {
+			$text .= " ";
+		}
+
 		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
@@ -564,8 +572,6 @@ sub open_url {
 
 		if (!$uris_found) {
 			$self->status_msg("No URL found in tweet.");
-			sleep(2);
-			$self->status_msg("");
 		}
 	}
 }

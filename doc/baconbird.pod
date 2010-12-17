@@ -151,7 +151,7 @@ message, first asking for the recipient and then for the message.
 =head4 Retweeting
 
 To retweet another user's tweet to your own timeline, a user only needs to 
-select this tweet and press C<Ctrl-R>. Direct messages can't be retweeted.
+select this tweet and press C<Ctrl-R>. Direct messages can't be retweeted.  Retweets will be marked with a "R" in the second leftmost column of the screen.
 
 =head4 Replies
 
