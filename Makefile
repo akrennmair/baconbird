@@ -42,3 +42,10 @@ $(HTMLFILE): $(PODFILE)
 
 clean:
 	$(RM) $(HTMLFILE) *.tmp
+
+versions:
+	@for mod in ${PERL_MODULES} ; \
+		do \
+			$(PERL) -M$${mod} -e "print \"$${mod}: \$${$${mod}::VERSION}\n\"";  \
+		done \
+
