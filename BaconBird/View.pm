@@ -104,12 +104,13 @@ has 'config' => (
 has 'highlight_patterns' => (
 	is => 'rw',
 	isa => 'ArrayRef',
-	#default => undef,
+	default => sub { [ ] },
 );
 
 has 'hide_patterns' => (
 	is => 'rw',
 	isa => 'ArrayRef',
+	default => sub { [ ] },
 );
 
 sub BUILD {
@@ -152,8 +153,6 @@ EOT
 	$self->f->set("program", "[baconbird " . PROGRAM_VERSION . "] ");
 	$self->set_shorthelp(HELP_TIMELINE);
 	$self->set_caption(BaconBird::Model::HOME_TIMELINE);
-	$self->highlight_patterns([ ]);
-	$self->hide_patterns([ ]);
 
 	my $filters = $self->config->get_value("filters");
 	if ($filters) {
