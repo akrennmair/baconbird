@@ -162,7 +162,7 @@ EOT
 			foreach my $expr (@$highlight) {
 				push(@{$self->highlight_patterns}, { regex => $expr, id => 1 });
 			}
-		} else {
+		} elsif ($highlight) {
 				push(@{$self->highlight_patterns}, { regex => $highlight, id => 1 });
 		}
 		my $hide = $filters->{hide};
@@ -170,7 +170,7 @@ EOT
 			foreach my $expr (@$hide) {
 				push(@{$self->hide_patterns}, { regex => $expr });
 			}
-		} else {
+		} elsif ($hide) {
 			push(@{$self->hide_patterns}, { regex => $hide });
 		}
 	}
