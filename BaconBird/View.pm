@@ -104,7 +104,7 @@ has 'config' => (
 has 'highlight_patterns' => (
 	is => 'rw',
 	isa => 'ArrayRef',
-	default => undef,
+	#default => undef,
 );
 
 has 'hide_patterns' => (
