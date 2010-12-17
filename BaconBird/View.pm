@@ -320,6 +320,8 @@ sub next_event {
 		$self->load_timeline(BaconBird::Model::FAVORITES_TIMELINE);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_BY_ME)) {
 		$self->load_timeline(BaconBird::Model::RT_BY_ME_TIMELINE);
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_OF_ME)) {
+		$self->load_timeline(BaconBird::Model::RT_OF_ME_TIMELINE);
 	}
 }
 
@@ -461,6 +463,8 @@ sub set_caption {
 					BaconBird::Model::USER_TIMELINE => "User Timeline",
 					BaconBird::Model::HELP => "Help",
 					BaconBird::Model::FAVORITES_TIMELINE => "Favorites Timeline",
+					BaconBird::Model::RT_BY_ME_TIMELINE => "Retweets by me",
+					BaconBird::Model::RT_OF_ME_TIMELINE => "Retweets of me",
 				);
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
@@ -628,6 +632,7 @@ sub load_timeline {
 		BaconBird::Model::HOME_TIMELINE => "Loading home timeline...", 
 		BaconBird::Model::FAVORITES_TIMELINE => "Loading favorites timeline...", 
 		BaconBird::Model::RT_BY_ME_TIMELINE => "Loading retweeted-by-me timeline...",
+		BaconBird::Model::RT_OF_ME_TIMELINE => "Loading retweets-of-me timeline...",
 	);
 
 	$self->set_shorthelp_by_tl($tl);
@@ -650,6 +655,7 @@ sub set_shorthelp_by_tl {
 		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
 		BaconBird::Model::FAVORITES_TIMELINE => HELP_TIMELINE, 
 		BaconBird::Model::RT_BY_ME_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::RT_OF_ME_TIMELINE => HELP_TIMELINE, 
 	);
 
 	$self->set_shorthelp($shorthelp_map{$tl});
@@ -758,10 +764,31 @@ sub update_view {
 
 		push(@lines, $self->split_lines($tweet->{text}, int($self->f->get("root:w"))));
 		push(@lines, "");
+		if (defined($tweet->{retweeted_by}) && scalar(@{$tweet->{retweeted_by}}) > 0) {
+			push(@lines, $self->format_retweeters($tweet->{retweeted_by}));
+		}
 		push(@lines, $self->fill_user($tweet->{user}{screen_name} || $tweet->{from_user}, $tweet->{user}));
 	}
 
 	$self->f->modify("tweetview", "replace_inner", $self->stfl_listify(\@lines));
+}
+
+sub format_retweeters {
+	my $self = shift;
+	my ($rts) = @_;
+
+	my $text = "Retweeted by ";
+
+	my $i;
+	for ($i=0;$i<4 && $i<scalar(@$rts);$i++) {
+		$text .= ", " if $i > 0;
+		$text .= "@" . $rts->[$i]->{screen_name};
+	}
+	if ($i < scalar(@$rts)) {
+		$text .= " and " . sprintf("%u", scalar(@$rts)-$i) . " other(s)";
+	}
+
+	return $text;
 }
 
 sub fill_user {
