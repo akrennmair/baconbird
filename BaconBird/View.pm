@@ -318,6 +318,8 @@ sub next_event {
 		$self->open_url($tweetid);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FAVORITES)) {
 		$self->load_timeline(BaconBird::Model::FAVORITES_TIMELINE);
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_BY_ME)) {
+		$self->load_timeline(BaconBird::Model::RT_BY_ME_TIMELINE);
 	}
 }
 
@@ -625,6 +627,7 @@ sub load_timeline {
 		BaconBird::Model::MENTIONS => "Loading mentions...", 
 		BaconBird::Model::HOME_TIMELINE => "Loading home timeline...", 
 		BaconBird::Model::FAVORITES_TIMELINE => "Loading favorites timeline...", 
+		BaconBird::Model::RT_BY_ME_TIMELINE => "Loading retweeted-by-me timeline...",
 	);
 
 	$self->set_shorthelp_by_tl($tl);
@@ -646,6 +649,7 @@ sub set_shorthelp_by_tl {
 		BaconBird::Model::MENTIONS => HELP_TIMELINE, 
 		BaconBird::Model::HOME_TIMELINE => HELP_TIMELINE, 
 		BaconBird::Model::FAVORITES_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::RT_BY_ME_TIMELINE => HELP_TIMELINE, 
 	);
 
 	$self->set_shorthelp($shorthelp_map{$tl});

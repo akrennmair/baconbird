@@ -16,6 +16,7 @@ use constant SEARCH_RESULTS => 4;
 use constant USER_TIMELINE => 5;
 use constant HELP => 6;
 use constant FAVORITES_TIMELINE => 7;
+use constant RT_BY_ME_TIMELINE => 8;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -146,6 +147,17 @@ has 'config' => (
 	isa => 'BaconBird::Config',
 );
 
+has 'rt_by_me_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+);
+
+has 'rt_by_me_timeline_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
@@ -177,6 +189,8 @@ sub reload_all {
 		$self->reload_user_timeline;
 	} elsif ($tl == FAVORITES_TIMELINE) {
 		$self->reload_favorites_timeline;
+	} elsif ($tl == RT_BY_ME_TIMELINE) {
+		$self->reload_rt_by_me_timeline;
 	}
 }
 
@@ -347,6 +361,8 @@ sub select_timeline {
 		}
 	} elsif ($timeline == FAVORITES_TIMELINE) {
 		$self->reload_favorites_timeline if ($self->favorites_timeline_ts + DEFAULT_WAIT_TIME) < time;
+	} elsif ($timeline == RT_BY_ME_TIMELINE) {
+		$self->reload_rt_by_me_timeline if ($self->rt_by_me_timeline_ts + DEFAULT_WAIT_TIME) < time;
 	}
 }
 
@@ -364,6 +380,8 @@ sub get_timeline {
 		return $self->user_timeline;
 	} elsif ($self->current_timeline == FAVORITES_TIMELINE) {
 		return $self->favorites_timeline;
+	} elsif ($self->current_timeline == RT_BY_ME_TIMELINE) {
+		return $self->rt_by_me_timeline;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
@@ -514,6 +532,30 @@ sub reload_favorites_timeline {
 		die "Reloading favorites timeline failed: " . $err->error . "\n";
 	}
 	$self->favorites_timeline_ts(time);
+}
+
+sub reload_rt_by_me_timeline {
+	my $self = shift;
+	my $id = -1;
+
+	if (defined($self->rt_by_me_timeline) && scalar(@{$self->rt_by_me_timeline}) > 0) {
+		$id = $self->home_timeline->[0]->{id};
+	}
+
+	eval {
+		my $newdata = $self->nt->retweeted_by_me({ since_id => $id, count => 50 });
+		my $olddata = $self->rt_by_me_timeline;
+		$newdata ||= [ ];
+		$olddata ||= [ ];
+		my @new_timeline = ( @$newdata, @$olddata );
+
+		$self->add_new_messages($newdata);
+		$self->rt_by_me_timeline(\@new_timeline);
+	};
+	if (my $err = $@) {
+		die "Reloading retweeted-by-me timeline failed: " . $err->error . "\n";
+	}
+	$self->rt_by_me_timeline_ts(time);
 }
 
 no Moose;
