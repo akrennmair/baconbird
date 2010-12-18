@@ -225,13 +225,14 @@ sub reload_all {
 sub reload_home_timeline {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
 
 	if (defined($self->home_timeline) && scalar(@{$self->home_timeline}) > 0) {
 		$id = $self->home_timeline->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->home_timeline({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->home_timeline({ since_id => $id, count => $count });
 		my $olddata = $self->home_timeline;
 		my @new_timeline = ( @$newdata, @$olddata );
 
@@ -248,13 +249,14 @@ sub reload_home_timeline {
 sub reload_my_timeline {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
 
 	if (defined($self->my_timeline) && scalar(@{$self->my_timeline}) > 0) {
 		$id = $self->my_timeline->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->user_timeline({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->user_timeline({ since_id => $id, count => $count });
 		my $olddata = $self->my_timeline || [];
 		my @new_timeline = ( @$newdata, @$olddata );
 
@@ -271,12 +273,14 @@ sub reload_my_timeline {
 sub reload_mentions {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
+
 	if (defined($self->mentions) && scalar(@{$self->mentions}) > 0) {
 		$id = $self->mentions->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->mentions({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->mentions({ since_id => $id, count => $count });
 		my $olddata = $self->mentions;
 		my @new_mentions = ( @$newdata, @$olddata );
 
@@ -293,12 +297,14 @@ sub reload_mentions {
 sub reload_direct_messages {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
+
 	if (defined($self->direct_messages) && scalar(@{$self->direct_messages}) > 0) {
 		$id = $self->direct_messages->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->direct_messages({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->direct_messages({ since_id => $id, count => $count });
 		my $olddata = $self->direct_messages;
 		my @new_dms = ( @$newdata, @$olddata );
 
@@ -315,12 +321,14 @@ sub reload_direct_messages {
 sub reload_user_timeline {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
+
 	if (defined($self->user_timeline) && scalar(@{$self->user_timeline}) > 0) {
 		$id = $self->user_timeline->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->user_timeline({ since_id => $id, screen_name => $self->user_name, count => 50 });
+		my $newdata = $self->nt->user_timeline({ since_id => $id, screen_name => $self->user_name, count => $count });
 		my $olddata = $self->user_timeline;
 		my @new_usertl = ( @$newdata, @$olddata );
 
@@ -492,12 +500,14 @@ sub send_dm {
 sub reload_search_results {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
+
 	if (defined($self->search_results) && scalar(@{$self->search_results}) > 0) {
 		$id = $self->search_results->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->search({ since_id => $id, q => $self->searchphrase, count => 50 })->{results};
+		my $newdata = $self->nt->search({ since_id => $id, q => $self->searchphrase, count => $count })->{results};
 		my $olddata = $self->search_results;
 		my @new_search_results = ( @$newdata, @$olddata );
 
@@ -596,13 +606,14 @@ sub reload_favorites_timeline {
 sub reload_rt_by_me_timeline {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
 
 	if (defined($self->rt_by_me_timeline) && scalar(@{$self->rt_by_me_timeline}) > 0) {
 		$id = $self->rt_by_me_timeline->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->retweeted_by_me({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->retweeted_by_me({ since_id => $id, count => $count });
 		my $olddata = $self->rt_by_me_timeline;
 		$newdata ||= [ ];
 		$olddata ||= [ ];
@@ -620,13 +631,14 @@ sub reload_rt_by_me_timeline {
 sub reload_rt_of_me_timeline {
 	my $self = shift;
 	my $id = -1;
+	my $count = $self->config->get_value("count");
 
 	if (defined($self->rt_of_me_timeline) && scalar(@{$self->rt_of_me_timeline}) > 0) {
 		$id = $self->rt_of_me_timeline->[0]->{id};
 	}
 
 	eval {
-		my $newdata = $self->nt->retweets_of_me({ since_id => $id, count => 50 });
+		my $newdata = $self->nt->retweets_of_me({ since_id => $id, count => $count });
 		my $olddata = $self->rt_of_me_timeline;
 		#print STDERR Dumper($newdata);
 		$newdata ||= [ ];

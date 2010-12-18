@@ -23,6 +23,7 @@ sub BUILD {
 	my $self = shift;
 	$self->default_config({
 		"browser"		=> "links %u",
+		"count"			=> 50,
 	});
 	eval {
 		my $conf = new Config::General(-LowerCaseNames => 1, -ConfigFile => $self->configfile);
