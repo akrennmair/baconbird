@@ -136,8 +136,26 @@ has 'is_quit_prompt' => (
 	default => 0,
 );
 
+has 'keybindings' => (
+	is => 'rw',
+	isa => 'Str',
+);
+
+has 'form_style' => (
+	is => 'rw',
+	isa => 'Str',
+);
+
+
 sub BUILD {
 	my $self = shift;
+
+	my $keybindings = 'bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT"';
+
+	my $form_style = "style_focus[listfocus]:fg=yellow,bg=blue,attr=bold $keybindings .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1";
+
+	$self->keybindings($keybindings);
+	$self->form_style($form_style);
 
 	$self->f(stfl::create( <<"EOT" ));
 vbox[root]
@@ -151,15 +169,7 @@ vbox[root]
     \@style_1_normal:fg=yellow,bg=red,attr=bold
     .expand:vh
     list[tweets]
-      style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
-      bind_up:"** k"
-      bind_down:"** j"
-      bind_page_down:"** RIGHT"
-      bind_page_up:"** LEFT"
-      .expand:vh
-      pos_name[tweetid]:
-      pos[tweetpos]:0
-      richtext:1
+      $form_style
     vbox 
       .display[displayview]:0
       .expand:0
@@ -827,11 +837,13 @@ sub set_shorthelp_by_tl {
 sub show_help {
 	my $self = shift;
 
+	my $keybindings = $self->keybindings;
+
 	$self->is_help(1);
 	$self->set_shorthelp(HELP_HELP);
 	$self->set_caption(BaconBird::Model::HELP);
 	$self->f->set("infoline", ">> ");
-	$self->f->modify("tweets", "replace", '{textview[help] bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" }');
+	$self->f->modify("tweets", "replace", "{textview[help] $keybindings }");
 
 	my $list = "{list";
 
@@ -849,7 +861,8 @@ sub close_help {
 	my $self = shift;
 	$self->is_help(0);
 
-	$self->f->modify("help", "replace", '{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}');
+	my $form_style = $self->form_style;
+	$self->f->modify("help", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1051,11 +1064,12 @@ sub matches_hidden {
 sub show_load_search {
 	my $self = shift;
 
+	my $form_style = $self->form_style;
 	$self->is_load_search(1);
 	$self->set_shorthelp(HELP_LOAD_SEARCH);
 	$self->set_caption(BaconBird::Model::LOAD_SEARCH);
 	$self->f->set("infoline", ">> ");
-	$self->f->modify("tweets", "replace", '{list[load_search] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[searchid]: pos[searchpos]:0}');
+	$self->f->modify("tweets", "replace", "{list[load_search] $form_style}");
 
 	my $list = "{list";
 
@@ -1077,7 +1091,8 @@ sub close_load_search {
 	my $self = shift;
 	$self->is_load_search(0);
 
-	$self->f->modify("load_search", "replace", '{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}');
+	my $form_style = $self->form_style;
+	$self->f->modify("load_search", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
