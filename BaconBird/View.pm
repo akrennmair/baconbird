@@ -264,7 +264,7 @@ sub next_event {
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_YES) ||
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER)
 		) {
-			my $searchid = $self->f->get("searchid");
+			my $searchid = $self->f->get("tweetid");
 			$self->close_load_search;
 			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($searchid);
 			$self->status_msg("Loading saved search $searchphrase...");
@@ -272,7 +272,7 @@ sub next_event {
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
 			$self->set_lastline;
-			my $searchid = $self->f->get("searchid");
+			my $searchid = $self->f->get("tweetid");
 			$self->status_msg("Deleting saved search...");
 			$self->ctrl->destroy_saved_search($searchid);
 			$self->status_msg("Deleted saved search.");
@@ -1065,6 +1065,7 @@ sub show_load_search {
 	my $self = shift;
 
 	my $form_style = $self->form_style;
+
 	$self->is_load_search(1);
 	$self->set_shorthelp(HELP_LOAD_SEARCH);
 	$self->set_caption(BaconBird::Model::LOAD_SEARCH);
