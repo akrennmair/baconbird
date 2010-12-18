@@ -216,6 +216,7 @@ sub next_event {
 
 	if ($self->is_quit_prompt) {
 		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_YES)) {
+			$self->status_msg("Quit baconbird? (y/[n]) yes");
 			$self->ctrl->quit(1);
 			$self->is_quit_prompt(0);
 		} elsif (
@@ -223,6 +224,7 @@ sub next_event {
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER) ||
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_CANCEL)
 		) {
+			$self->status_msg("Quit baconbird? (y/[n]) no");
 			$self->is_quit_prompt(0);
 			$self->set_lastline;
 		}
