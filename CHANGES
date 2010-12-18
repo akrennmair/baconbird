@@ -7,6 +7,7 @@ Changes for baconbird:
 	Implemented highlighting of phrases within tweets.
 	Implemented filters to hide certain tweets.
 	Added "retweeted by me" and "retweets of me" timelines.
+	Added "my timeline" and ability to view any other user timeline.
 
 0.2 (2010-10-21):
 	Added detailed view of current tweet.
