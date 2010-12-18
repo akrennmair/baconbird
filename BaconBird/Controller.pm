@@ -44,7 +44,6 @@ has 'config' => (
 	isa => 'BaconBird::Config',
 );
 
-
 sub BUILD {
 	my $self = shift;
 	mkdir($self->configdir, 0755);

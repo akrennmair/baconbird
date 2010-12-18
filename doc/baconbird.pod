@@ -334,7 +334,6 @@ options are supported:
 
 =back
 
-
 =head2 License
 
 MIT/X Consortium License

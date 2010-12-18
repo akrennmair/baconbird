@@ -146,7 +146,6 @@ has 'form_style' => (
 	isa => 'Str',
 );
 
-
 sub BUILD {
 	my $self = shift;
 
