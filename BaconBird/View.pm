@@ -60,6 +60,12 @@ use constant HELP_HELP => [
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Quit Help" },
 ];
 
+use constant HELP_LOAD_SEARCH => [
+	{ key => BaconBird::KeyMap::KEY_LOAD_SEARCH, desc => "Search" },
+	{ key => BaconBird::KeyMap::KEY_DELETE_ITEM, desc => "Delete search" },
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Cancel" },
+];
+
 use Data::Dumper;
 
 has 'f' => (
@@ -114,6 +120,13 @@ has 'hide_patterns' => (
 	isa => 'ArrayRef',
 	default => sub { [ ] },
 );
+
+has 'is_load_search' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
+
 
 sub BUILD {
 	my $self = shift;
@@ -196,12 +209,14 @@ sub next_event {
 
 	return unless defined($e);
 
-	if ($self->is_help) {
-		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+		if ($self->is_help) {
 			$self->close_help;
+		} elsif ($self->is_load_search) {
+			$self->close_load_search;
+		} else {
+			$self->ctrl->quit(1);
 		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
-		$self->ctrl->quit(1);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
 			$self->set_shorthelp(HELP_USERNAME);
@@ -379,6 +394,32 @@ sub next_event {
 
 			$self->get_timeline;
 		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SAVE_SEARCH)) {
+		my $searchphrase = $self->ctrl->get_search_phrase;
+		if (defined($searchphrase) && $searchphrase ne "") {
+			$self->ctrl->create_saved_search;
+			$self->status_msg("Search saved.");
+		} else {
+			$self->status_msg("No search query to save.");
+		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_LOAD_SEARCH)) {
+		if ($self->is_load_search) {
+			my $searchid = $self->f->get("searchid");
+			$self->close_load_search;
+			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($searchid);
+			$self->ctrl->set_search_phrase($searchphrase);
+			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
+		} else {
+			$self->show_load_search;
+		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
+		if ($self->is_load_search) {
+			$self->set_lastline;
+			my $searchid = $self->f->get("searchid");
+			$self->ctrl->destroy_saved_search($searchid);
+			$self->status_msg("Deleted search.");
+			$self->show_load_search;
+		}
 	}
 }
 
@@ -523,6 +564,7 @@ sub set_caption {
 					BaconBird::Model::RT_BY_ME_TIMELINE => "Retweets by me",
 					BaconBird::Model::RT_OF_ME_TIMELINE => "Retweets of me",
 					BaconBird::Model::MY_TIMELINE => "My timeline",
+					BaconBird::Model::LOAD_SEARCH => "Load Saved Search",
 				);
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
@@ -941,6 +983,41 @@ sub matches_hidden {
 	}
 
 	return undef;
+}
+
+sub show_load_search {
+	my $self = shift;
+
+	$self->is_load_search(1);
+	$self->set_shorthelp(HELP_LOAD_SEARCH);
+	$self->set_caption(BaconBird::Model::LOAD_SEARCH);
+	$self->f->set("infoline", ">> ");
+	$self->f->modify("tweets", "replace", "{list[load_search] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[searchid]: pos[searchpos]:0}");
+
+	my $list = "{list";
+
+	foreach my $s (@{$self->ctrl->saved_searches}) {
+		my $text;
+
+		$text .= sprintf("%s", $s->{query});
+		$text =~ s/[\r\n]+/ /g;
+		$text =~ s/\</<>/g;
+		$list .= "{listitem[" .  $s->{id} . "] text:" . stfl::quote($text) . "}";
+	}
+
+	$list .= "}";
+
+	$self->f->modify("load_search", "replace_inner", $list);
+}
+
+sub close_load_search {
+	my $self = shift;
+	$self->is_load_search(0);
+
+	$self->f->modify("load_search", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0}");
+	# TODO: set_shorthelp
+	$self->set_shorthelp_by_tl($self->timeline);
+	$self->get_timeline;
 }
 
 no Moose;

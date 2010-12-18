@@ -33,6 +33,9 @@ use constant KEY_MY_TIMELINE     => 26;
 use constant KEY_ENTER_USER      => 27;
 use constant KEY_ENTER_HIGHLIGHT => 28;
 use constant KEY_ENTER_HIDE      => 29;
+use constant KEY_SAVE_SEARCH     => 30;
+use constant KEY_LOAD_SEARCH     => 31;
+use constant KEY_DELETE_ITEM     => 32;
 
 has 'keymap' => (
 	is => 'rw',
@@ -75,6 +78,9 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_ENTER_USER        => { key => 'l',     desc => 'Go to a given user timeline.' },
 		BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT   => { key => 'h',     desc => 'Enter an expression to highlight. Enter it again to un-highlight.' },
 		BaconBird::KeyMap::KEY_ENTER_HIDE        => { key => 'e',     desc => 'Enter an expression to hide. Enter it again to show.' },
+		BaconBird::KeyMap::KEY_SAVE_SEARCH       => { key => 's',     desc => 'Save current sought for expression' },
+		BaconBird::KeyMap::KEY_LOAD_SEARCH       => { key => 'S',     desc => 'Load saved search.' },
+		BaconBird::KeyMap::KEY_DELETE_ITEM       => { key => 'd',     desc => 'Delete item.' },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
 		BaconBird::KeyMap::KEY_ENTER             => { key => "ENTER", internal => 1 },
 	});

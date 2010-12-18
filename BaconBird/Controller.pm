@@ -248,5 +248,27 @@ sub unfollow_user {
 	$self->model->unfollow_user($screen_name);
 }
 
+sub create_saved_search {
+	my $self = shift;
+	$self->model->create_saved_search;
+}
+
+sub saved_searches {
+	my $self = shift;
+	$self->model->saved_searches;
+}
+
+sub destroy_saved_search {
+	my $self = shift;
+	my ($searchid) = @_;
+	$self->model->destroy_saved_search($searchid);
+}
+
+sub get_query_from_saved_search_id {
+	my $self = shift;
+	my ($searchid) = @_;
+	return $self->model->get_query_from_saved_search_id($searchid);
+}
+
 no Moose;
 1;

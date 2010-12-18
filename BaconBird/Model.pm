@@ -19,6 +19,8 @@ use constant FAVORITES_TIMELINE => 7;
 use constant RT_BY_ME_TIMELINE  => 8;
 use constant RT_OF_ME_TIMELINE  => 9;
 use constant MY_TIMELINE        => 10;
+use constant LOAD_SEARCH        => 11;
+use constant SAVED_SEARCH       => 12;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -667,6 +669,42 @@ sub fetch_retweet_info {
 			#print STDERR Dumper($tw);
 		}
 	}
+}
+
+sub create_saved_search {
+	my $self = shift;
+	my $searchphrase = $self->get_search_phrase;
+	if (defined($searchphrase) && $searchphrase ne "") {
+		$self->nt->create_saved_search({ query => $searchphrase });
+	}
+}
+
+sub saved_searches {
+	my $self = shift;
+	my $saved_searches = $self->nt->saved_searches;
+	return $saved_searches;
+}
+
+sub destroy_saved_search {
+	my $self = shift;
+	my ($searchid) = @_;
+	$self->nt->destroy_saved_search({ id => $searchid });
+}
+
+sub get_query_from_saved_search_id {
+	my $self = shift;
+	my ($searchid) = @_;
+	my $query = '';
+
+	eval {
+		my $newdata = $self->nt->show_saved_search({ id => $searchid });
+		$query = $newdata->query;
+	};
+	if (my $err = $@) {
+		die "Reloading saved search failed. " . $err->error . "\n";
+	}
+
+	return $query;
 }
 
 no Moose;
