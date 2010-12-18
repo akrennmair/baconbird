@@ -325,6 +325,15 @@ sub next_event {
 		$self->load_timeline(BaconBird::Model::RT_OF_ME_TIMELINE);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MY_TIMELINE)) {
 		$self->load_timeline(BaconBird::Model::MY_TIMELINE);
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_USER)) {
+		$self->set_input_field("User: ", "", "end-user-search");
+	} elsif ($e eq "end-user-search") {
+		my $user_name = $self->f->get("inputfield");
+		$self->set_lastline;
+		if (defined($user_name) && $user_name ne "") {
+			$self->ctrl->set_user_name($user_name);
+			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+		}
 	}
 }
 

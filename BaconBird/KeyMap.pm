@@ -30,6 +30,7 @@ use constant KEY_FAVORITES       => 23;
 use constant KEY_RT_BY_ME        => 24;
 use constant KEY_RT_OF_ME        => 25;
 use constant KEY_MY_TIMELINE     => 26;
+use constant KEY_ENTER_USER      => 27;
 
 has 'keymap' => (
 	is => 'rw',
@@ -69,6 +70,7 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_RT_BY_ME          => { key => '6',     desc => 'Show tweets retweeted by me.' },
 		BaconBird::KeyMap::KEY_RT_OF_ME          => { key => '7',     desc => 'Show my tweets that were retweeted.' },
 		BaconBird::KeyMap::KEY_MY_TIMELINE       => { key => '8',     desc => 'Show my tweets.' },
+		BaconBird::KeyMap::KEY_ENTER_USER        => { key => 'l',     desc => 'Go to a given user timeline.' },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
 		BaconBird::KeyMap::KEY_ENTER             => { key => "ENTER", internal => 1 },
 	});
