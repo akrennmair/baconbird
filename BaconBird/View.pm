@@ -7,6 +7,7 @@ use Text::Wrap;
 use URI::Find;
 
 use BaconBird::KeyMap;
+use BaconBird::Model;
 
 use constant PROGRAM_VERSION => "0.3";
 use constant TWITTER_MAX_LEN => 140;
@@ -350,7 +351,7 @@ sub next_event {
 			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT)) {
-		$self->set_input_field("User: ", "", "end-new-highlight");
+		$self->set_input_field("Expression to highlight: ", "", "end-new-highlight");
 	} elsif ($e eq "end-new-highlight") {
 		my $highlight = $self->f->get("inputfield");
 		$self->set_lastline;
@@ -373,7 +374,7 @@ sub next_event {
 			$self->get_timeline;
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIDE)) {
-		$self->set_input_field("User: ", "", "end-new-hide");
+		$self->set_input_field("Expression to hide: ", "", "end-new-hide");
 	} elsif ($e eq "end-new-hide") {
 		my $hide = $self->f->get("inputfield");
 		$self->set_lastline;
