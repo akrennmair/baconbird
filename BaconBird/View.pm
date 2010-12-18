@@ -424,21 +424,23 @@ sub next_event {
 		} else {
 			if ($self->ctrl->is_direct_message) {
 				$self->status_msg("Deleting direct message...");
-				my $status = $self->ctrl->destroy_direct_message($tweetid);
-				if ($status) {
+				my $error = $self->ctrl->destroy_direct_message($tweetid);
+				if ($error) {
 					$self->status_msg("Error deleting direct message...");
 				} else {
 					$self->status_msg("Deleted direct message.");
 					$self->get_timeline;
+					stfl::reset();
 				}
 			} else {
 				$self->status_msg("Deleting your tweet...");
-				my $status = $self->ctrl->destroy_status($tweetid);
-				if ($status) {
+				my $error = $self->ctrl->destroy_status($tweetid);
+				if ($error) {
 					$self->status_msg("Error deleting your tweet...");
 				} else {
 					$self->status_msg("Deleted your tweet.");
 					$self->get_timeline;
+					stfl::reset();
 				}
 			}
 		}
@@ -916,6 +918,8 @@ sub fill_user {
 	my $width = int($self->f->get("root:w"));
 
 	my @lines;
+
+	$screen_name ||= '';
 
 	my $name_line = '@' . $screen_name;
 	$name_line .= ' ' . $user->{name} if $user->{name};
