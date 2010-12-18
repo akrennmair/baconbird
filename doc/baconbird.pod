@@ -236,9 +236,10 @@ again, you can press C<e> again and enter the same expression.
 =head4 Saved Searches
 
 You can save a search by pressing C<s> once you've searched for something. You
-can later press C<S> to see what your saves search expressions are. You can
-reload a saved search by pressing C<S> over a saved search query. You can delete
-a saved search by pressing C<d>.
+can later press C<l> to see what your saves search expressions are. You can
+reload a saved search by pressing C<ENTER> or C<y> over a saved search query.
+You can delete a saved search by pressing C<d>. You can cancel by pressing
+C<ESC> or C<n>.
 
 =head2 Keybindings
 
@@ -277,7 +278,7 @@ current bindings.
 
 =item * C<V>: Show favorite tweets.
 
-=item * C<l>: Go to a given user timeline.
+=item * C<g>: Go to a given user timeline.
 
 =item * C</>: Start new search.
 
@@ -305,7 +306,7 @@ current bindings.
 
 =item * C<s>: Save current sought for expression
 
-=item * C<S>: Load saved search.
+=item * C<l>: Load saved search.
 
 =item * C<d>: Delete item.
 
