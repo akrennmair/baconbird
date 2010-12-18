@@ -22,8 +22,9 @@ has 'default_config' => (
 sub BUILD {
 	my $self = shift;
 	$self->default_config({
-		"browser"		=> "links %u",
-		"count"			=> 50,
+			"browser"      => "links %u",
+			"count"        => 50,
+			"confirm_quit" => 0,
 	});
 	eval {
 		my $conf = new Config::General(-LowerCaseNames => 1, -ConfigFile => $self->configfile);

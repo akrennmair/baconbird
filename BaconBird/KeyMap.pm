@@ -36,6 +36,8 @@ use constant KEY_ENTER_HIDE      => 29;
 use constant KEY_SAVE_SEARCH     => 30;
 use constant KEY_LOAD_SEARCH     => 31;
 use constant KEY_DELETE_ITEM     => 32;
+use constant KEY_YES             => 33;
+use constant KEY_NO              => 34;
 
 has 'keymap' => (
 	is => 'rw',
@@ -81,6 +83,8 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_SAVE_SEARCH       => { key => 's',     desc => 'Save current sought for expression' },
 		BaconBird::KeyMap::KEY_LOAD_SEARCH       => { key => 'S',     desc => 'Load saved search.' },
 		BaconBird::KeyMap::KEY_DELETE_ITEM       => { key => 'd',     desc => 'Delete item.' },
+		BaconBird::KeyMap::KEY_YES               => { key => 'y',     internal => 1 },
+		BaconBird::KeyMap::KEY_NO                => { key => 'n',     internal => 1 },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
 		BaconBird::KeyMap::KEY_ENTER             => { key => "ENTER", internal => 1 },
 	});

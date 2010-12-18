@@ -128,6 +128,11 @@ has 'is_load_search' => (
 	default => 0,
 );
 
+has 'is_quit_prompt' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
 
 sub BUILD {
 	my $self = shift;
@@ -194,7 +199,6 @@ EOT
 sub next_event {
 	my $self = shift;
 
-
 	my $e = $self->f->run(10000);
 	$self->f->run(-1);
 
@@ -210,13 +214,33 @@ sub next_event {
 
 	return unless defined($e);
 
+	if ($self->is_quit_prompt) {
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_YES)) {
+			$self->ctrl->quit(1);
+			$self->is_quit_prompt(0);
+		} elsif (
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_NO) ||
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER) ||
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_CANCEL)
+		) {
+			$self->is_quit_prompt(0);
+			$self->set_lastline;
+		}
+		return;
+	}
+
 	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
 		if ($self->is_help) {
 			$self->close_help;
 		} elsif ($self->is_load_search) {
 			$self->close_load_search;
 		} else {
-			$self->ctrl->quit(1);
+			if ($self->config->get_value("confirm_quit") =~ m/^(?:1|yes|true|on)$/i) {
+				$self->status_msg("Quit baconbird? (y/[n])");
+				$self->is_quit_prompt(1);
+			} else {
+				$self->ctrl->quit(1);
+			}
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
