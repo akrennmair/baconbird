@@ -152,6 +152,10 @@ vbox[root]
     .expand:vh
     list[tweets]
       style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
+      bind_up:"** k"
+      bind_down:"** j"
+      bind_page_down:"** RIGHT"
+      bind_page_up:"** LEFT"
       .expand:vh
       pos_name[tweetid]:
       pos[tweetpos]:0
@@ -827,7 +831,7 @@ sub show_help {
 	$self->set_shorthelp(HELP_HELP);
 	$self->set_caption(BaconBird::Model::HELP);
 	$self->f->set("infoline", ">> ");
-	$self->f->modify("tweets", "replace", "{textview[help] }");
+	$self->f->modify("tweets", "replace", '{textview[help] bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" }');
 
 	my $list = "{list";
 
@@ -845,7 +849,7 @@ sub close_help {
 	my $self = shift;
 	$self->is_help(0);
 
-	$self->f->modify("help", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}");
+	$self->f->modify("help", "replace", '{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}');
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1051,7 +1055,7 @@ sub show_load_search {
 	$self->set_shorthelp(HELP_LOAD_SEARCH);
 	$self->set_caption(BaconBird::Model::LOAD_SEARCH);
 	$self->f->set("infoline", ">> ");
-	$self->f->modify("tweets", "replace", "{list[load_search] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[searchid]: pos[searchpos]:0}");
+	$self->f->modify("tweets", "replace", '{list[load_search] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[searchid]: pos[searchpos]:0}');
 
 	my $list = "{list";
 
@@ -1073,7 +1077,7 @@ sub close_load_search {
 	my $self = shift;
 	$self->is_load_search(0);
 
-	$self->f->modify("load_search", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}");
+	$self->f->modify("load_search", "replace", '{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT" .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}');
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
