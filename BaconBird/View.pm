@@ -334,6 +334,51 @@ sub next_event {
 			$self->ctrl->set_user_name($user_name);
 			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT)) {
+		$self->set_input_field("User: ", "", "end-new-highlight");
+	} elsif ($e eq "end-new-highlight") {
+		my $highlight = $self->f->get("inputfield");
+		$self->set_lastline;
+
+		if (defined($highlight) && $highlight ne "") {
+			my $active = 0;
+			for (my $i = 0; $i < scalar @{$self->highlight_patterns}; $i++) {
+				my $pattern = $self->highlight_patterns->[$i];
+
+				if ($pattern->{regex} eq $highlight) {
+					$active = 1;
+					splice @{$self->highlight_patterns}, $i, 1;
+				}
+			}
+
+			unless ($active) {
+				push(@{$self->highlight_patterns}, { regex => $highlight, id => 1 });
+			}
+
+			$self->get_timeline;
+		}
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIDE)) {
+		$self->set_input_field("User: ", "", "end-new-hide");
+	} elsif ($e eq "end-new-hide") {
+		my $hide = $self->f->get("inputfield");
+		$self->set_lastline;
+		if (defined($hide) && $hide ne "") {
+			my $active = 0;
+			for (my $i = 0; $i < scalar @{$self->hide_patterns}; $i++) {
+				my $pattern = $self->hide_patterns->[$i];
+
+				if ($pattern->{regex} eq $hide) {
+					$active = 1;
+					splice @{$self->hide_patterns}, $i, 1;
+				}
+			}
+
+			unless ($active) {
+				push(@{$self->hide_patterns}, { regex => $hide, id => 1 });
+			}
+
+			$self->get_timeline;
+		}
 	}
 }
 
