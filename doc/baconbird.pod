@@ -122,6 +122,32 @@ presented and continuously updated. A user can then select another timeline,
 and switch back to the search result timeline by pressing C<4>. The updates on 
 the search results are then continued.
 
+=head4 User Timeline
+
+There are two ways of showing an user's timeline. You can press C<u> while
+having selected a tweet, and that user's timeline will be displayed. Also, you
+can press C<l>, and a field to enter a user's screen name will appear. Once you
+press C<ENTER>, and if that uses exists, that user's timeline will be loaded.
+
+=head4 Favorites
+
+You can see all your favorites by pressing C<V>. These are the tweets that
+you've marked as favorites.
+
+=head4 My Retweets
+
+By pressing C<6>, you will load a timeline that shows all the tweets that you
+have retweeted.
+
+=head4 Retweets of Me
+
+C<7> will show you a timeline with all the tweets that you've posted that have
+been retweeted.
+
+=head4 My Timeline
+
+If you want to see all your tweets, you can press C<8>.
+
 =head3 Functions
 
 =head4 Automatic Reloads
@@ -150,8 +176,9 @@ message, first asking for the recipient and then for the message.
 
 =head4 Retweeting
 
-To retweet another user's tweet to your own timeline, a user only needs to 
-select this tweet and press C<Ctrl-R>. Direct messages can't be retweeted.  Retweets will be marked with a "R" in the second leftmost column of the screen.
+To retweet another user's tweet to your own timeline, a user only needs to
+select this tweet and press C<Ctrl-R>. Direct messages can't be retweeted.
+Retweets will be marked with a "R" in the second leftmost column of the screen.
 
 =head4 Replies
 
@@ -180,8 +207,8 @@ Pressing C<v> again hides the detail view.
 =head4 Favorites
 
 If you want to favorite a tweet, you can select it and press C<Ctrl-F>.
-Favorited tweets will be marked with a "!" in the leftmost column of the
-screen. To unfavorite a previously favorited tweet, press C<Ctrl-F> again.
+Favorite tweets will be marked with a "!" in the leftmost column of the
+screen. To unfavorite a favorite tweet, press C<Ctrl-F> again.
 
 =head4 Following and Unfollowing
 
@@ -191,9 +218,32 @@ follow any user by pressing C<f> and entering the desired screen name.
 
 To unfollow a user, select a tweet or direct message and press C<U>.
 
+=head4 Highlighting
+
+You can highlight expressions on the screen by adding these terms to the
+configuration file. (See L</Configuration>). You can press C<h> and a prompt
+will be shown where you can enter an expression to be highlighted.
+L<Regular expressions|perlre> are accepted. To stop highlighting those
+expressions again, you can press C<e> again and enter the same expression.
+
+=head4 Hiding
+
+You can hide tweets that match a certain expression by adding the terms that you
+want hidden to the configuration file. (See L</Configuration>). You can also
+press C<e> to enter the expression you want hidden. To show those expressions
+again, you can press C<e> again and enter the same expression.
+
+=head4 Saved Searches
+
+You can save a search by pressing C<s> once you've searched for something. You
+can later press C<S> to see what your saves search expressions are. You can
+reload a saved search by pressing C<S> over a saved search query. You can delete
+a saved search by pressing C<d>.
+
 =head2 Keybindings
 
-These are the default keybindings. You can always type C<?> to display the current bindings.
+These are the default keybindings. You can always type C<?> to display the
+current bindings.
 
 =over 12
 
@@ -219,6 +269,16 @@ These are the default keybindings. You can always type C<?> to display the curre
 
 =item * C<5>: Go to user timeline (if show user function was used before).
 
+=item * C<6>: Show tweets retweeted by me.
+
+=item * C<7>: Show my tweets that were retweeted.
+
+=item * C<8>: Show my tweets.
+
+=item * C<V>: Show favorite tweets.
+
+=item * C<l>: Go to a given user timeline.
+
 =item * C</>: Start new search.
 
 =item * C<u>: Show timeline of currently selected tweet's author.
@@ -238,6 +298,16 @@ These are the default keybindings. You can always type C<?> to display the curre
 =item * C<o>: Open URLs in tweet in default browser.
 
 =item * C<Ctrl-L>: Redraw screen.
+
+=item * C<h>: Enter an expression to highlight. Enter it again to un-highlight.
+
+=item * C<e>: Enter an expression to hide. Enter it again to show.
+
+=item * C<s>: Save current sought for expression
+
+=item * C<S>: Load saved search.
+
+=item * C<d>: Delete item.
 
 =back
 
@@ -268,7 +338,7 @@ options are supported:
 
 MIT/X Consortium License
 
-(C)opyright 2010 Andreas Krennmair <L<ak@synflood.at>>
+(C)opyright 2010 Andreas Krennmair E<lt>ak@synflood.atE<gt>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
