@@ -26,6 +26,7 @@ use constant HELP_TIMELINE => [
 	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
 	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
 	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
+	{ key => BaconBird::KeyMap::KEY_MY_TIMELINE, desc => "My Timeline" },
 	{ key => BaconBird::KeyMap::KEY_OPEN_URL, desc => "Open URLs" },
 ];
 
@@ -41,6 +42,7 @@ use constant HELP_DM => [
 	{ key => BaconBird::KeyMap::KEY_DIRECT_MESSAGES, desc => "Direct Messages" },
 	{ key => BaconBird::KeyMap::KEY_SEARCH_RESULTS, desc => "Search Results" },
 	{ key => BaconBird::KeyMap::KEY_USER_TIMELINE, desc => "User Timeline" },
+	{ key => BaconBird::KeyMap::KEY_MY_TIMELINE, desc => "My Timeline" },
 ];
 
 use constant HELP_TWEET => [
@@ -321,6 +323,8 @@ sub next_event {
 		$self->load_timeline(BaconBird::Model::RT_BY_ME_TIMELINE);
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_OF_ME)) {
 		$self->load_timeline(BaconBird::Model::RT_OF_ME_TIMELINE);
+	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MY_TIMELINE)) {
+		$self->load_timeline(BaconBird::Model::MY_TIMELINE);
 	}
 }
 
@@ -464,6 +468,7 @@ sub set_caption {
 					BaconBird::Model::FAVORITES_TIMELINE => "Favorites Timeline",
 					BaconBird::Model::RT_BY_ME_TIMELINE => "Retweets by me",
 					BaconBird::Model::RT_OF_ME_TIMELINE => "Retweets of me",
+					BaconBird::Model::MY_TIMELINE => "My timeline",
 				);
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
@@ -632,6 +637,7 @@ sub load_timeline {
 		BaconBird::Model::FAVORITES_TIMELINE => "Loading favorites timeline...", 
 		BaconBird::Model::RT_BY_ME_TIMELINE => "Loading retweeted-by-me timeline...",
 		BaconBird::Model::RT_OF_ME_TIMELINE => "Loading retweets-of-me timeline...",
+		BaconBird::Model::MY_TIMELINE => "Loading my timeline...",
 	);
 
 	$self->set_shorthelp_by_tl($tl);
@@ -655,6 +661,7 @@ sub set_shorthelp_by_tl {
 		BaconBird::Model::FAVORITES_TIMELINE => HELP_TIMELINE, 
 		BaconBird::Model::RT_BY_ME_TIMELINE => HELP_TIMELINE, 
 		BaconBird::Model::RT_OF_ME_TIMELINE => HELP_TIMELINE, 
+		BaconBird::Model::MY_TIMELINE => HELP_TIMELINE, 
 	);
 
 	$self->set_shorthelp($shorthelp_map{$tl});

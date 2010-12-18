@@ -3,21 +3,22 @@ use Moose;
 
 use Data::Dumper;
 
-use constant CONSUMER_KEY => "HNWGxf3exkB1mQGpM83PWw";
+use constant CONSUMER_KEY    => "HNWGxf3exkB1mQGpM83PWw";
 use constant CONSUMER_SECRET => "dcQsVwycEa6vNCMO0ljbzZfzloqBXcRDMYXRo1bsN7k";
 
 use constant DEFAULT_WAIT_TIME => 60;
-use constant MIN_WAIT_TIME => 10;
+use constant MIN_WAIT_TIME     => 10;
 
-use constant HOME_TIMELINE => 1;
-use constant MENTIONS => 2;
-use constant DIRECT_MESSAGES => 3;
-use constant SEARCH_RESULTS => 4;
-use constant USER_TIMELINE => 5;
-use constant HELP => 6;
+use constant HOME_TIMELINE      => 1;
+use constant MENTIONS           => 2;
+use constant DIRECT_MESSAGES    => 3;
+use constant SEARCH_RESULTS     => 4;
+use constant USER_TIMELINE      => 5;
+use constant HELP               => 6;
 use constant FAVORITES_TIMELINE => 7;
-use constant RT_BY_ME_TIMELINE => 8;
-use constant RT_OF_ME_TIMELINE => 9;
+use constant RT_BY_ME_TIMELINE  => 8;
+use constant RT_OF_ME_TIMELINE  => 9;
+use constant MY_TIMELINE        => 10;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -170,6 +171,17 @@ has 'rt_of_me_timeline_ts' => (
 	default => 0,
 );
 
+has 'my_timeline' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+);
+
+has 'my_timeline_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
 sub login {
 	my $self = shift;
 	my ($at, $ats) = $self->ctrl->load_tokens();
@@ -205,6 +217,8 @@ sub reload_all {
 		$self->reload_rt_by_me_timeline;
 	} elsif ($tl == RT_OF_ME_TIMELINE) {
 		$self->reload_rt_of_me_timeline;
+	} elsif ($tl == MY_TIMELINE) {
+		$self->reload_my_timeline;
 	}
 }
 
@@ -229,6 +243,29 @@ sub reload_home_timeline {
 		die "Reloading home timeline failed: " . $err->error . "\n";
 	}
 	$self->home_timeline_ts(time);
+}
+
+sub reload_my_timeline {
+	my $self = shift;
+	my $id = -1;
+
+	if (defined($self->my_timeline) && scalar(@{$self->my_timeline}) > 0) {
+		$id = $self->my_timeline->[0]->{id};
+	}
+
+	eval {
+		my $newdata = $self->nt->user_timeline({ since_id => $id, count => 50 });
+		my $olddata = $self->my_timeline || [];
+		my @new_timeline = ( @$newdata, @$olddata );
+
+		$self->add_new_messages($newdata);
+
+		$self->my_timeline(\@new_timeline);
+	};
+	if (my $err = $@) {
+		die "Reloading my timeline failed: " . $err->error . "\n";
+	}
+	$self->my_timeline_ts(time);
 }
 
 sub reload_mentions {
@@ -379,6 +416,8 @@ sub select_timeline {
 		$self->reload_rt_by_me_timeline if ($self->rt_by_me_timeline_ts + DEFAULT_WAIT_TIME) < time;
 	} elsif ($timeline == RT_OF_ME_TIMELINE) {
 		$self->reload_rt_of_me_timeline if ($self->rt_of_me_timeline_ts + DEFAULT_WAIT_TIME) < time;
+	} elsif ($timeline == MY_TIMELINE) {
+		$self->reload_my_timeline if ($self->my_timeline_ts + DEFAULT_WAIT_TIME) < time;
 	}
 }
 
@@ -400,6 +439,8 @@ sub get_timeline {
 		return $self->rt_by_me_timeline;
 	} elsif ($self->current_timeline == RT_OF_ME_TIMELINE) {
 		return $self->rt_of_me_timeline;
+	} elsif ($self->current_timeline == MY_TIMELINE) {
+		return $self->my_timeline;
 	} else {
 		# an unknown timeline type is a bug
 		return undef;
