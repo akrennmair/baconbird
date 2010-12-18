@@ -62,9 +62,11 @@ use constant HELP_HELP => [
 ];
 
 use constant HELP_LOAD_SEARCH => [
-	{ key => BaconBird::KeyMap::KEY_LOAD_SEARCH, desc => "Search" },
+	{ key => BaconBird::KeyMap::KEY_YES, desc => "Search" },
+	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Search" },
 	{ key => BaconBird::KeyMap::KEY_DELETE_ITEM, desc => "Delete search" },
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Cancel" },
+	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
 ];
 
 use Data::Dumper;
@@ -231,18 +233,46 @@ sub next_event {
 		return;
 	}
 
-	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
-		if ($self->is_help) {
+	if ($self->is_help) {
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
 			$self->close_help;
-		} elsif ($self->is_load_search) {
+		}
+		return;
+	}
+
+	if ($self->is_load_search) {
+		if (
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT) ||
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_CANCEL)
+		) {
 			$self->close_load_search;
+		} elsif (
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_YES) ||
+			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER)
+		) {
+			my $searchid = $self->f->get("searchid");
+			$self->close_load_search;
+			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($searchid);
+			$self->status_msg("Loading saved search $searchphrase...");
+			$self->ctrl->set_search_phrase($searchphrase);
+			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
+			$self->set_lastline;
+			my $searchid = $self->f->get("searchid");
+			$self->status_msg("Deleting saved search...");
+			$self->ctrl->destroy_saved_search($searchid);
+			$self->status_msg("Deleted saved search.");
+			$self->show_load_search;
+		}
+		return;
+	}
+
+	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+		if ($self->config->get_value("confirm_quit") =~ m/^(?:1|yes|true|on)$/i) {
+			$self->status_msg("Quit baconbird? (y/[n])");
+			$self->is_quit_prompt(1);
 		} else {
-			if ($self->config->get_value("confirm_quit") =~ m/^(?:1|yes|true|on)$/i) {
-				$self->status_msg("Quit baconbird? (y/[n])");
-				$self->is_quit_prompt(1);
-			} else {
-				$self->ctrl->quit(1);
-			}
+			$self->ctrl->quit(1);
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
 		if ($self->ctrl->is_direct_message) {
@@ -430,44 +460,27 @@ sub next_event {
 			$self->status_msg("No search query to save.");
 		}
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_LOAD_SEARCH)) {
-		if ($self->is_load_search) {
-			my $searchid = $self->f->get("searchid");
-			$self->close_load_search;
-			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($searchid);
-			$self->ctrl->set_search_phrase($searchphrase);
-			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
-		} else {
-			$self->show_load_search;
-		}
+		$self->show_load_search;
 	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
-		if ($self->is_load_search) {
-			$self->set_lastline;
-			my $searchid = $self->f->get("searchid");
-			$self->status_msg("Deleting saved search...");
-			$self->ctrl->destroy_saved_search($searchid);
-			$self->status_msg("Deleted saved search.");
-			$self->show_load_search;
-		} else {
-			if ($self->ctrl->is_direct_message) {
-				$self->status_msg("Deleting direct message...");
-				my $error = $self->ctrl->destroy_direct_message($tweetid);
-				if ($error) {
-					$self->status_msg("Error deleting direct message...");
-				} else {
-					$self->status_msg("Deleted direct message.");
-					$self->get_timeline;
-					stfl::reset();
-				}
+		if ($self->ctrl->is_direct_message) {
+			$self->status_msg("Deleting direct message...");
+			my $error = $self->ctrl->destroy_direct_message($tweetid);
+			if ($error) {
+				$self->status_msg("Error deleting direct message...");
 			} else {
-				$self->status_msg("Deleting your tweet...");
-				my $error = $self->ctrl->destroy_status($tweetid);
-				if ($error) {
-					$self->status_msg("Error deleting your tweet...");
-				} else {
-					$self->status_msg("Deleted your tweet.");
-					$self->get_timeline;
-					stfl::reset();
-				}
+				$self->status_msg("Deleted direct message.");
+				$self->get_timeline;
+				stfl::reset();
+			}
+		} else {
+			$self->status_msg("Deleting your tweet...");
+			my $error = $self->ctrl->destroy_status($tweetid);
+			if ($error) {
+				$self->status_msg("Error deleting your tweet...");
+			} else {
+				$self->status_msg("Deleted your tweet.");
+				$self->get_timeline;
+				stfl::reset();
 			}
 		}
 	}
