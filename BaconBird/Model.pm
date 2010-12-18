@@ -707,5 +707,31 @@ sub get_query_from_saved_search_id {
 	return $query;
 }
 
+sub destroy_direct_message {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	eval {
+		$self->nt->destroy_direct_message({ id => $tweetid });
+		delete $self->all_dms->{$tweetid};
+	};
+	if ($@) {
+		return 1;
+	}
+}
+
+sub destroy_status {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	eval {
+		$self->nt->destroy_status({ id => $tweetid });
+		delete $self->all_messages->{$tweetid};
+	};
+	if ($@) {
+		return 1;
+	}
+}
+
 no Moose;
 1;

@@ -417,9 +417,30 @@ sub next_event {
 		if ($self->is_load_search) {
 			$self->set_lastline;
 			my $searchid = $self->f->get("searchid");
+			$self->status_msg("Deleting saved search...");
 			$self->ctrl->destroy_saved_search($searchid);
-			$self->status_msg("Deleted search.");
+			$self->status_msg("Deleted saved search.");
 			$self->show_load_search;
+		} else {
+			if ($self->ctrl->is_direct_message) {
+				$self->status_msg("Deleting direct message...");
+				my $status = $self->ctrl->destroy_direct_message($tweetid);
+				if ($status) {
+					$self->status_msg("Error deleting direct message...");
+				} else {
+					$self->status_msg("Deleted direct message.");
+					$self->get_timeline;
+				}
+			} else {
+				$self->status_msg("Deleting your tweet...");
+				my $status = $self->ctrl->destroy_status($tweetid);
+				if ($status) {
+					$self->status_msg("Error deleting your tweet...");
+				} else {
+					$self->status_msg("Deleted your tweet.");
+					$self->get_timeline;
+				}
+			}
 		}
 	}
 }

@@ -270,5 +270,17 @@ sub get_query_from_saved_search_id {
 	return $self->model->get_query_from_saved_search_id($searchid);
 }
 
+sub destroy_direct_message {
+	my $self = shift;
+	my ($tweetid) = @_;
+	$self->model->destroy_direct_message($tweetid);
+}
+
+sub destroy_status {
+	my $self = shift;
+	my ($tweetid) = @_;
+	$self->model->destroy_status($tweetid);
+}
+
 no Moose;
 1;
