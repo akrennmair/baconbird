@@ -707,5 +707,82 @@ sub get_query_from_saved_search_id {
 	return $query;
 }
 
+sub remove_tweet {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	# Remove from all messages
+	delete $self->all_messages->{$tweetid};
+
+	# Remove from timelines
+	for (my $i = 0; $i < scalar @{$self->home_timeline}; $i++) {
+		my $tweet = $self->home_timeline->[$i];
+		if ($tweetid == $tweet->id) {
+			splice @{$self->home_timeline}, $i, 1;
+			last;
+		}
+	}
+
+	if ($self->my_timeline and @{$self->my_timeline}) {
+		for (my $i = 0; $i < scalar @{$self->my_timeline}; $i++) {
+			my $tweet = $self->my_timeline->[$i];
+			if ($tweetid == $tweet->id) {
+				splice @{$self->my_timeline}, $i, 1;
+				last;
+			}
+		}
+	}
+}
+
+sub remove_direct_message {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	# Remove from all messages
+	delete $self->all_dms->{$tweetid};
+
+	# Remove from timelines
+	if ($self->direct_messages and @{$self->direct_messages}) {
+		for (my $i = 0; $i < scalar @{$self->direct_messages}; $i++) {
+			my $tweet = $self->direct_messages->[$i];
+			if ($tweetid == $tweet->id) {
+				splice @{$self->direct_messages}, $i, 1;
+				last;
+			}
+		}
+	}
+}
+
+sub destroy_status {
+	my $self = shift;
+	my ($tweetid) = @_;
+
+	eval {
+		$self->nt->destroy_status({ id => $tweetid });
+		$self->remove_tweet($tweetid);
+
+		$self->reload_home_timeline;
+		$self->reload_my_timeline;
+	};
+	if (my $err = $@) {
+		return 1;
+	}
+}
+
+sub destroy_direct_message {
+	my $self = shift;
+	my ($dmid) = @_;
+
+	eval {
+		$self->nt->destroy_direct_message({ id => $dmid });
+		$self->remove_direct_message($dmid);
+
+		$self->reload_direct_messages;
+	};
+	if (my $err = $@) {
+		return 1;
+	}
+}
+
 no Moose;
 1;
