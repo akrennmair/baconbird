@@ -140,9 +140,9 @@ vbox[root]
     label text[current_view]:"" .expand:h
     label .tie:r text[rateinfo]:"-1/-1" .expand:0
   vbox
+    \@style_1_normal:fg=yellow,bg=red,attr=bold
     .expand:vh
     list[tweets]
-      \@style_1_normal:fg=yellow,bg=red,attr=bold
       style_focus[listfocus]:fg=yellow,bg=blue,attr=bold
       .expand:vh
       pos_name[tweetid]:
@@ -788,7 +788,7 @@ sub close_help {
 	my $self = shift;
 	$self->is_help(0);
 
-	$self->f->modify("help", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0}");
+	$self->f->modify("help", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}");
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1014,7 +1014,7 @@ sub close_load_search {
 	my $self = shift;
 	$self->is_load_search(0);
 
-	$self->f->modify("load_search", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0}");
+	$self->f->modify("load_search", "replace", "{list[tweets] style_focus[listfocus]:fg=yellow,bg=blue,attr=bold .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1}");
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
