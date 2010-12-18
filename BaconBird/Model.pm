@@ -701,7 +701,7 @@ sub get_query_from_saved_search_id {
 		$query = $newdata->query;
 	};
 	if (my $err = $@) {
-		die "Reloading saved search failed. " . $err->error . "\n";
+		die "Reloading saved search failed. " . $err . "\n";
 	}
 
 	return $query;
