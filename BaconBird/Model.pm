@@ -559,7 +559,7 @@ sub toggle_favorite {
 	if ($self->is_direct_message) {
 		die "you can't favorite a direct message.\n";
 	} else {
-		my $tweet = $self->all_messages->{$tweetid};
+		my $tweet = $self->get_message_by_id($tweetid);
 		if (defined($tweet)) {
 			if ($tweet->{favorited}) {
 				$self->nt->destroy_favorite($tweetid);
