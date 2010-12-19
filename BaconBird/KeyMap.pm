@@ -38,6 +38,7 @@ use constant KEY_LOAD_SEARCH     => 31;
 use constant KEY_DELETE_ITEM     => 32;
 use constant KEY_YES             => 33;
 use constant KEY_NO              => 34;
+use constant KEY_LIMIT_TIMELINE  => 35;
 
 has 'keymap' => (
 	is => 'rw',
@@ -83,6 +84,7 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_SAVE_SEARCH       => { key => 's',     desc => 'Save current sought for expression' },
 		BaconBird::KeyMap::KEY_LOAD_SEARCH       => { key => 'l',     desc => 'Load saved search.' },
 		BaconBird::KeyMap::KEY_DELETE_ITEM       => { key => 'd',     desc => 'Delete item.' },
+		BaconBird::KeyMap::KEY_LIMIT_TIMELINE    => { key => 'L',     desc => 'Limit timeline with expression. Enter "all" to remove the limit.' },
 		BaconBird::KeyMap::KEY_YES               => { key => 'y',     internal => 1 },
 		BaconBird::KeyMap::KEY_NO                => { key => 'n',     internal => 1 },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },

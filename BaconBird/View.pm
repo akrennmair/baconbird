@@ -146,6 +146,11 @@ has 'form_style' => (
 	isa => 'Str',
 );
 
+has 'limit_expression' => (
+	is => 'rw',
+	isa => 'Str',
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -494,6 +499,15 @@ sub next_event {
 					stfl::reset();
 				}
 			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_LIMIT_TIMELINE)) {
+			$self->set_input_field("Limit ('all' to reset): ", "", "end-limit-expression", 1);
+		} elsif ($e eq "end-limit-expression") {
+			my $expression = $self->f->get("inputfield");
+			$self->set_lastline;
+			if (defined($expression) && $expression ne "") {
+				$self->limit_expression($expression);
+				$self->get_timeline;
+			}
 		}
 	}
 }
@@ -548,10 +562,27 @@ sub set_timeline {
 	my $self = shift;
 	my ($tl) = @_;
 
+	my $re;
+
+	my $expression = $self->limit_expression;
+	if ($expression && $expression ne "") {
+		if ($expression eq "all") {
+			$expression = "";
+			$self->limit_expression($expression);
+		} else {
+			$re = qr/$expression/i;
+		}
+	}
+
 	my $list = "{list ";
 
 	foreach my $tweet (@$tl) {
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
+
+		if ($re and $tweet->{text} !~ m/$re/ and $username !~ m/$re/) {
+			next;
+		}
+
 		my $text;
 
 		if ($tweet->{favorited}) {
@@ -582,6 +613,11 @@ sub set_timeline {
 	$self->f->modify("tweets", "replace_inner", $list);
 
 	$self->f->run(-1);
+
+	if (defined($self->f->get_focus) && $self->f->get_focus ne "tweetinput") {
+		$self->update_info_line($self->f->get("tweetid"));
+	}
+	$self->update_view($self->f->get("tweetid"));
 }
 
 sub set_rate_limit {
@@ -621,10 +657,6 @@ sub do_reply {
 sub get_timeline {
 	my $self = shift;
 	$self->set_timeline($self->ctrl->get_timeline);
-	if (defined($self->f->get_focus) && $self->f->get_focus ne "tweetinput") {
-		$self->update_info_line($self->f->get("tweetid"));
-	}
-	$self->update_view($self->f->get("tweetid"));
 }
 
 sub select_timeline {
@@ -819,6 +851,7 @@ sub load_timeline {
 		BaconBird::Model::MY_TIMELINE => "Loading my timeline...",
 	);
 
+	$self->limit_expression("");
 	$self->set_shorthelp_by_tl($tl);
 	$self->status_msg($statusmsg_map{$tl});
 	$self->select_timeline($tl);
