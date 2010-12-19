@@ -246,16 +246,12 @@ sub next_event {
 			$self->set_lastline;
 		}
 		return;
-	}
-
-	if ($self->is_help) {
+	} elsif ($self->is_help) {
 		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
 			$self->close_help;
 		}
 		return;
-	}
-
-	if ($self->is_load_search) {
+	} elsif ($self->is_load_search) {
 		if (
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT) ||
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_CANCEL)
@@ -280,222 +276,223 @@ sub next_event {
 			$self->show_load_search;
 		}
 		return;
-	}
-
-	if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
-		if ($self->config->get_value("confirm_quit") =~ m/^(?:1|yes|true|on)$/i) {
-			$self->status_msg("Quit baconbird? (y/[n])");
-			$self->is_quit_prompt(1);
-		} else {
-			$self->ctrl->quit(1);
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
-		if ($self->ctrl->is_direct_message) {
+	} else {
+		# Default mode
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+			if ($self->config->get_value("confirm_quit") =~ m/^(?:1|yes|true|on)$/i) {
+				$self->status_msg("Quit baconbird? (y/[n])");
+				$self->is_quit_prompt(1);
+			} else {
+				$self->ctrl->quit(1);
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
+			if ($self->ctrl->is_direct_message) {
+				$self->set_shorthelp(HELP_USERNAME);
+				$self->allow_shorten(0);
+				$self->set_input_field("DM to: ", "", "end-input-rcpt");
+			} else {
+				$self->set_shorthelp(HELP_TWEET);
+				$self->set_input_field("Tweet: ");
+			}
+		} elsif ($e eq "cancel-input") {
+			$self->allow_shorten(1);
+			$self->set_lastline;
+			if ($self->ctrl->is_direct_message) {
+				$self->set_shorthelp(HELP_DM);
+			} else {
+				$self->set_shorthelp(HELP_TIMELINE);
+			}
+			$self->saved_status_id(undef);
+		} elsif ($e eq "end-input") {
+			my $tweet = $self->f->get("inputfield");
+			$self->set_lastline;
+			if ($self->ctrl->is_direct_message) {
+				$self->set_shorthelp(HELP_DM);
+				$self->send_dm($tweet);
+			} else {
+				$self->set_shorthelp(HELP_TIMELINE);
+				$self->post_update($tweet);
+			}
+		} elsif ($e eq "end-input-rcpt") {
+			$self->allow_shorten(1);
+			my $rcpt = $self->f->get("inputfield");
+			$self->set_lastline;
+			if ($rcpt ne "") {
+				$self->saved_rcpt($rcpt);
+				$self->do_reply(0);
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RETWEET)) {
+			if (defined($tweetid) && $tweetid ne "") {
+				$self->status_msg("Retweeting...");
+				$self->ctrl->retweet($tweetid);
+				$self->status_msg("Retweeted.");
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REPLY)) {
+			$self->do_reply(0);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_PUBLICREPLY)) {
+			$self->do_reply(1);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHORTEN)) {
+			if ($self->f->get_focus eq "tweetinput") {
+				$self->shorten;
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HOME_TIMELINE)) {
+			$self->load_timeline(BaconBird::Model::HOME_TIMELINE);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MENTIONS)) {
+			$self->load_timeline(BaconBird::Model::MENTIONS);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DIRECT_MESSAGES)) {
+			$self->load_timeline(BaconBird::Model::DIRECT_MESSAGES);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH_RESULTS)) {
+			my $searchphrase = $self->ctrl->get_search_phrase;
+			if (defined($searchphrase) && $searchphrase ne "") {
+				$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
+			} else {
+				$self->status_msg("No search results to view.");
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_USER_TIMELINE)) {
+			my $screen_name = $self->ctrl->get_user_name;
+			if (defined($screen_name) && $screen_name ne "") {
+				$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+			} else {
+				$self->status_msg("No user timeline to view.");
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH)) {
+			$self->set_input_field("Search: ", "", "end-input-search");
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
+			$self->show_user_timeline;
+		} elsif ($e eq "end-input-search") {
+			my $searchphrase = $self->f->get("inputfield");
+			$self->set_lastline;
+			if (defined($searchphrase) && $searchphrase ne "") {
+				$self->ctrl->set_search_phrase($searchphrase);
+				$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_TOGGLE_FAVORITE)) {
+			if (defined($tweetid) && $tweetid ne "") {
+				$self->ctrl->toggle_favorite($tweetid);
+				$self->get_timeline;
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HELP)) {
+			$self->show_help;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW)) {
+			$self->follow;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_UNFOLLOW)) {
+			$self->unfollow;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW_USER)) {
 			$self->set_shorthelp(HELP_USERNAME);
 			$self->allow_shorten(0);
-			$self->set_input_field("DM to: ", "", "end-input-rcpt");
-		} else {
-			$self->set_shorthelp(HELP_TWEET);
-			$self->set_input_field("Tweet: ");
-		}
-	} elsif ($e eq "cancel-input") {
-		$self->allow_shorten(1);
-		$self->set_lastline;
-		if ($self->ctrl->is_direct_message) {
-			$self->set_shorthelp(HELP_DM);
-		} else {
-			$self->set_shorthelp(HELP_TIMELINE);
-		}
-		$self->saved_status_id(undef);
-	} elsif ($e eq "end-input") {
-		my $tweet = $self->f->get("inputfield");
-		$self->set_lastline;
-		if ($self->ctrl->is_direct_message) {
-			$self->set_shorthelp(HELP_DM);
-			$self->send_dm($tweet);
-		} else {
-			$self->set_shorthelp(HELP_TIMELINE);
-			$self->post_update($tweet);
-		}
-	} elsif ($e eq "end-input-rcpt") {
-		$self->allow_shorten(1);
-		my $rcpt = $self->f->get("inputfield");
-		$self->set_lastline;
-		if ($rcpt ne "") {
-			$self->saved_rcpt($rcpt);
-			$self->do_reply(0);
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RETWEET)) {
-		if (defined($tweetid) && $tweetid ne "") {
-			$self->status_msg("Retweeting...");
-			$self->ctrl->retweet($tweetid);
-			$self->status_msg("Retweeted.");
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REPLY)) {
-		$self->do_reply(0);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_PUBLICREPLY)) {
-		$self->do_reply(1);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHORTEN)) {
-		if ($self->f->get_focus eq "tweetinput") {
-			$self->shorten;
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HOME_TIMELINE)) {
-		$self->load_timeline(BaconBird::Model::HOME_TIMELINE);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MENTIONS)) {
-		$self->load_timeline(BaconBird::Model::MENTIONS);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DIRECT_MESSAGES)) {
-		$self->load_timeline(BaconBird::Model::DIRECT_MESSAGES);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH_RESULTS)) {
-		my $searchphrase = $self->ctrl->get_search_phrase;
-		if (defined($searchphrase) && $searchphrase ne "") {
-			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
-		} else {
-			$self->status_msg("No search results to view.");
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_USER_TIMELINE)) {
-		my $screen_name = $self->ctrl->get_user_name;
-		if (defined($screen_name) && $screen_name ne "") {
-			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
-		} else {
-			$self->status_msg("No user timeline to view.");
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH)) {
-		$self->set_input_field("Search: ", "", "end-input-search");
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
-		$self->show_user_timeline;
-	} elsif ($e eq "end-input-search") {
-		my $searchphrase = $self->f->get("inputfield");
-		$self->set_lastline;
-		if (defined($searchphrase) && $searchphrase ne "") {
-			$self->ctrl->set_search_phrase($searchphrase);
-			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_TOGGLE_FAVORITE)) {
-		if (defined($tweetid) && $tweetid ne "") {
-			$self->ctrl->toggle_favorite($tweetid);
-			$self->get_timeline;
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HELP)) {
-		$self->show_help;
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW)) {
-		$self->follow;
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_UNFOLLOW)) {
-		$self->unfollow;
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW_USER)) {
-		$self->set_shorthelp(HELP_USERNAME);
-		$self->allow_shorten(0);
-		$self->set_input_field("User to follow: ", "", "end-input-follow-user");
-	} elsif ($e eq "end-input-follow-user") {
-		my $screen_name = $self->f->get("inputfield");
-		$self->set_lastline;
-		if ($self->ctrl->is_direct_message) {
-			$self->set_shorthelp(HELP_DM);
-		} else {
-			$self->set_shorthelp(HELP_TIMELINE);
-		}
-		if (defined($screen_name) && $screen_name ne "") {
-			$self->status_msg("Following $screen_name...");
-			$self->ctrl->follow_user($screen_name);
-			$self->status_msg("");
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
-		$self->toggle_view;
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REDRAW)) {
-		stfl::reset();
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_OPEN_URL)) {
-		$self->open_url($tweetid);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FAVORITES)) {
-		$self->load_timeline(BaconBird::Model::FAVORITES_TIMELINE);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_BY_ME)) {
-		$self->load_timeline(BaconBird::Model::RT_BY_ME_TIMELINE);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_OF_ME)) {
-		$self->load_timeline(BaconBird::Model::RT_OF_ME_TIMELINE);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MY_TIMELINE)) {
-		$self->load_timeline(BaconBird::Model::MY_TIMELINE);
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_USER)) {
-		$self->set_input_field("User: ", "", "end-user-search");
-	} elsif ($e eq "end-user-search") {
-		my $user_name = $self->f->get("inputfield");
-		$self->set_lastline;
-		if (defined($user_name) && $user_name ne "") {
-			$self->ctrl->set_user_name($user_name);
-			$self->load_timeline(BaconBird::Model::USER_TIMELINE);
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT)) {
-		$self->set_input_field("Expression to highlight: ", "", "end-new-highlight");
-	} elsif ($e eq "end-new-highlight") {
-		my $highlight = $self->f->get("inputfield");
-		$self->set_lastline;
-
-		if (defined($highlight) && $highlight ne "") {
-			my $active = 0;
-			for (my $i = 0; $i < scalar @{$self->highlight_patterns}; $i++) {
-				my $pattern = $self->highlight_patterns->[$i];
-
-				if ($pattern->{regex} eq $highlight) {
-					$active = 1;
-					splice @{$self->highlight_patterns}, $i, 1;
-				}
-			}
-
-			unless ($active) {
-				push(@{$self->highlight_patterns}, { regex => $highlight, id => 1 });
-			}
-
-			$self->get_timeline;
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIDE)) {
-		$self->set_input_field("Expression to hide: ", "", "end-new-hide");
-	} elsif ($e eq "end-new-hide") {
-		my $hide = $self->f->get("inputfield");
-		$self->set_lastline;
-		if (defined($hide) && $hide ne "") {
-			my $active = 0;
-			for (my $i = 0; $i < scalar @{$self->hide_patterns}; $i++) {
-				my $pattern = $self->hide_patterns->[$i];
-
-				if ($pattern->{regex} eq $hide) {
-					$active = 1;
-					splice @{$self->hide_patterns}, $i, 1;
-				}
-			}
-
-			unless ($active) {
-				push(@{$self->hide_patterns}, { regex => $hide, id => 1 });
-			}
-
-			$self->get_timeline;
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SAVE_SEARCH)) {
-		my $searchphrase = $self->ctrl->get_search_phrase;
-		if (defined($searchphrase) && $searchphrase ne "") {
-			$self->ctrl->create_saved_search;
-			$self->status_msg("Search saved.");
-		} else {
-			$self->status_msg("No search query to save.");
-		}
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_LOAD_SEARCH)) {
-		$self->show_load_search;
-	} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
-		if ($self->ctrl->is_direct_message) {
-			$self->status_msg("Deleting direct message...");
-			my $error = $self->ctrl->destroy_direct_message($tweetid);
-			if ($error) {
-				$self->status_msg("Error deleting direct message...");
+			$self->set_input_field("User to follow: ", "", "end-input-follow-user");
+		} elsif ($e eq "end-input-follow-user") {
+			my $screen_name = $self->f->get("inputfield");
+			$self->set_lastline;
+			if ($self->ctrl->is_direct_message) {
+				$self->set_shorthelp(HELP_DM);
 			} else {
-				$self->status_msg("Deleted direct message.");
-				$self->get_timeline;
-				stfl::reset();
+				$self->set_shorthelp(HELP_TIMELINE);
 			}
-		} else {
-			$self->status_msg("Deleting your tweet...");
-			my $error = $self->ctrl->destroy_status($tweetid);
-			if ($error) {
-				$self->status_msg("Error deleting your tweet...");
-			} else {
-				$self->status_msg("Deleted your tweet.");
+			if (defined($screen_name) && $screen_name ne "") {
+				$self->status_msg("Following $screen_name...");
+				$self->ctrl->follow_user($screen_name);
+				$self->status_msg("");
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
+			$self->toggle_view;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_REDRAW)) {
+			stfl::reset();
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_OPEN_URL)) {
+			$self->open_url($tweetid);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FAVORITES)) {
+			$self->load_timeline(BaconBird::Model::FAVORITES_TIMELINE);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_BY_ME)) {
+			$self->load_timeline(BaconBird::Model::RT_BY_ME_TIMELINE);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_OF_ME)) {
+			$self->load_timeline(BaconBird::Model::RT_OF_ME_TIMELINE);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MY_TIMELINE)) {
+			$self->load_timeline(BaconBird::Model::MY_TIMELINE);
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_USER)) {
+			$self->set_input_field("User: ", "", "end-user-search");
+		} elsif ($e eq "end-user-search") {
+			my $user_name = $self->f->get("inputfield");
+			$self->set_lastline;
+			if (defined($user_name) && $user_name ne "") {
+				$self->ctrl->set_user_name($user_name);
+				$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT)) {
+			$self->set_input_field("Expression to highlight: ", "", "end-new-highlight");
+		} elsif ($e eq "end-new-highlight") {
+			my $highlight = $self->f->get("inputfield");
+			$self->set_lastline;
+
+			if (defined($highlight) && $highlight ne "") {
+				my $active = 0;
+				for (my $i = 0; $i < scalar @{$self->highlight_patterns}; $i++) {
+					my $pattern = $self->highlight_patterns->[$i];
+
+					if ($pattern->{regex} eq $highlight) {
+						$active = 1;
+						splice @{$self->highlight_patterns}, $i, 1;
+					}
+				}
+
+				unless ($active) {
+					push(@{$self->highlight_patterns}, { regex => $highlight, id => 1 });
+				}
+
 				$self->get_timeline;
-				stfl::reset();
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIDE)) {
+			$self->set_input_field("Expression to hide: ", "", "end-new-hide");
+		} elsif ($e eq "end-new-hide") {
+			my $hide = $self->f->get("inputfield");
+			$self->set_lastline;
+			if (defined($hide) && $hide ne "") {
+				my $active = 0;
+				for (my $i = 0; $i < scalar @{$self->hide_patterns}; $i++) {
+					my $pattern = $self->hide_patterns->[$i];
+
+					if ($pattern->{regex} eq $hide) {
+						$active = 1;
+						splice @{$self->hide_patterns}, $i, 1;
+					}
+				}
+
+				unless ($active) {
+					push(@{$self->hide_patterns}, { regex => $hide, id => 1 });
+				}
+
+				$self->get_timeline;
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SAVE_SEARCH)) {
+			my $searchphrase = $self->ctrl->get_search_phrase;
+			if (defined($searchphrase) && $searchphrase ne "") {
+				$self->ctrl->create_saved_search;
+				$self->status_msg("Search saved.");
+			} else {
+				$self->status_msg("No search query to save.");
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_LOAD_SEARCH)) {
+			$self->show_load_search;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
+			if ($self->ctrl->is_direct_message) {
+				$self->status_msg("Deleting direct message...");
+				my $error = $self->ctrl->destroy_direct_message($tweetid);
+				if ($error) {
+					$self->status_msg("Error deleting direct message...");
+				} else {
+					$self->status_msg("Deleted direct message.");
+					$self->get_timeline;
+					stfl::reset();
+				}
+			} else {
+				$self->status_msg("Deleting your tweet...");
+				my $error = $self->ctrl->destroy_status($tweetid);
+				if ($error) {
+					$self->status_msg("Error deleting your tweet...");
+				} else {
+					$self->status_msg("Deleted your tweet.");
+					$self->get_timeline;
+					stfl::reset();
+				}
 			}
 		}
 	}
