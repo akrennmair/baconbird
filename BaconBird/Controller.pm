@@ -98,7 +98,7 @@ sub reload_all {
 sub reload_all_and_update_view {
 	my $self = shift;
 	$self->model->reload_all;
-	$self->view->get_timeline;
+	$self->view->get_timeline(1);
 }
 
 sub load_tokens {

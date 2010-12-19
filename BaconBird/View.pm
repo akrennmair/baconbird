@@ -151,6 +151,11 @@ has 'limit_expression' => (
 	isa => 'Str',
 );
 
+has 'current_tweet' => (
+	is => 'rw',
+	isa => 'Str',
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -574,6 +579,9 @@ sub set_timeline {
 		}
 	}
 
+	my $pos = -1;
+	my $position = "0";
+
 	my $list = "{list ";
 
 	foreach my $tweet (@$tl) {
@@ -581,6 +589,11 @@ sub set_timeline {
 
 		if ($re and $tweet->{text} !~ m/$re/ and $username !~ m/$re/) {
 			next;
+		}
+
+		$pos++;
+		if ($tweet->{id} eq $self->current_tweet) {
+			$position = $pos;
 		}
 
 		my $text;
@@ -613,6 +626,8 @@ sub set_timeline {
 	$self->f->modify("tweets", "replace_inner", $list);
 
 	$self->f->run(-1);
+
+	$self->f->set("tweetpos", "$position");
 
 	if (defined($self->f->get_focus) && $self->f->get_focus ne "tweetinput") {
 		$self->update_info_line($self->f->get("tweetid"));
@@ -656,6 +671,10 @@ sub do_reply {
 
 sub get_timeline {
 	my $self = shift;
+	my ($preserve_position) = @_;
+	if ($preserve_position) {
+		$self->current_tweet($self->f->get("tweetid"));
+	}
 	$self->set_timeline($self->ctrl->get_timeline);
 }
 
