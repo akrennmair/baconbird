@@ -1119,10 +1119,11 @@ sub show_load_search {
 
 	my $list = "{list";
 
+	my $id = 0;
 	foreach my $s (@{$self->ctrl->saved_searches}) {
 		my $text;
 
-		$text .= sprintf("%s", $s->{query});
+		$text .= sprintf("%3d - %s", ++$id, $s->{query});
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
 		$list .= "{listitem[" .  $s->{id} . "] text:" . stfl::quote($text) . "}";
