@@ -555,6 +555,14 @@ sub set_timeline {
 			$text .= " ";
 		}
 
+		if ($tweet->{retweeted} ||
+			($tweet->{retweet_count} && $tweet->{retweet_count} ne '0')
+		) {
+			$text .= "R";
+		} else {
+			$text .= " ";
+		}
+
 		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
