@@ -356,7 +356,7 @@ sub next_event {
 				$self->status_msg("No user timeline to view.");
 			}
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEARCH)) {
-			$self->set_input_field("Search: ", "", "end-input-search");
+			$self->set_input_field("Search: ", "", "end-input-search", 1);
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
 			$self->show_user_timeline;
 		} elsif ($e eq "end-input-search") {
@@ -380,7 +380,7 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW_USER)) {
 			$self->set_shorthelp(HELP_USERNAME);
 			$self->allow_shorten(0);
-			$self->set_input_field("User to follow: ", "", "end-input-follow-user");
+			$self->set_input_field("User to follow: ", "", "end-input-follow-user", 1);
 		} elsif ($e eq "end-input-follow-user") {
 			my $screen_name = $self->f->get("inputfield");
 			$self->set_lastline;
@@ -409,7 +409,7 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_MY_TIMELINE)) {
 			$self->load_timeline(BaconBird::Model::MY_TIMELINE);
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_USER)) {
-			$self->set_input_field("User: ", "", "end-user-search");
+			$self->set_input_field("User: ", "", "end-user-search", 1);
 		} elsif ($e eq "end-user-search") {
 			my $user_name = $self->f->get("inputfield");
 			$self->set_lastline;
@@ -418,7 +418,7 @@ sub next_event {
 				$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 			}
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT)) {
-			$self->set_input_field("Expression to highlight: ", "", "end-new-highlight");
+			$self->set_input_field("Expression to highlight: ", "", "end-new-highlight", 1);
 		} elsif ($e eq "end-new-highlight") {
 			my $highlight = $self->f->get("inputfield");
 			$self->set_lastline;
@@ -441,7 +441,7 @@ sub next_event {
 				$self->get_timeline;
 			}
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER_HIDE)) {
-			$self->set_input_field("Expression to hide: ", "", "end-new-hide");
+			$self->set_input_field("Expression to hide: ", "", "end-new-hide", 1);
 		} elsif ($e eq "end-new-hide") {
 			my $hide = $self->f->get("inputfield");
 			$self->set_lastline;
@@ -524,14 +524,20 @@ sub set_lastline {
 
 sub set_input_field {
 	my $self = shift;
-	my ($label, $default_text, $end_input_event) = @_;
+	my ($label, $default_text, $end_input_event, $do_not_show_remaining) = @_;
 
 	$default_text = "" unless defined($default_text);
 	$end_input_event = "end-input" unless defined($end_input_event);
 
 	my $pos = length($default_text);
 
-	$self->f->modify("lastline", "replace", '{hbox[lastline] .expand:0 {label .expand:0 text[prompt]:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:' . $end_input_event . ' modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text) . ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}');
+	my $last_line_text = '{hbox[lastline] .expand:0 {label .expand:0 text[prompt]:' . stfl::quote($label) . '}{input[tweetinput] on_ESC:cancel-input on_ENTER:' . $end_input_event . ' modal:1 .expand:h text[inputfield]:' . stfl::quote($default_text);
+
+	unless ($do_not_show_remaining) {
+		$last_line_text .= ' pos:' . $pos . '} {label .tie:r .expand:0 text[remaining]:"" style_normal[remaining_style]:fg=white}';
+	}
+
+	$self->f->modify("lastline", "replace", $last_line_text);
 
 	$self->set_remaining($default_text);
 
