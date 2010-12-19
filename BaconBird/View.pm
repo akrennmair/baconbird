@@ -219,11 +219,13 @@ sub next_event {
 
 	my $tweetid = $self->f->get("tweetid");
 
-	if ($self->f->get_focus eq "tweetinput") {
-		$self->set_remaining($self->f->get("inputfield"));
-	}
-	if ($self->f->get_focus eq "tweets") {
-		$self->update_info_line($tweetid);
+	if (my $focus = $self->f->get_focus) {
+		if ($focus eq "tweetinput") {
+			$self->set_remaining($self->f->get("inputfield"));
+		}
+		if ($focus eq "tweets") {
+			$self->update_info_line($tweetid);
+		}
 	}
 	$self->update_view($tweetid);
 
