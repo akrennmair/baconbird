@@ -154,6 +154,7 @@ has 'limit_expression' => (
 has 'current_tweet' => (
 	is => 'rw',
 	isa => 'Str',
+	default => '',
 );
 
 sub BUILD {
@@ -672,8 +673,9 @@ sub do_reply {
 sub get_timeline {
 	my $self = shift;
 	my ($preserve_position) = @_;
-	if ($preserve_position) {
-		$self->current_tweet($self->f->get("tweetid"));
+	my $tweetid = $self->f->get("tweetid");
+	if ($preserve_position && $tweetid) {
+		$self->current_tweet($tweetid);
 	}
 	$self->set_timeline($self->ctrl->get_timeline);
 }
