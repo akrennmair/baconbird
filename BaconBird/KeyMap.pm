@@ -39,6 +39,8 @@ use constant KEY_DELETE_ITEM     => 32;
 use constant KEY_YES             => 33;
 use constant KEY_NO              => 34;
 use constant KEY_LIMIT_TIMELINE  => 35;
+use constant KEY_FOLLOWERS       => 36;
+use constant KEY_FRIENDS         => 37;
 
 has 'keymap' => (
 	is => 'rw',
@@ -85,6 +87,8 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_LOAD_SEARCH       => { key => 'l',     desc => 'Load saved search.' },
 		BaconBird::KeyMap::KEY_DELETE_ITEM       => { key => 'd',     desc => 'Delete item.' },
 		BaconBird::KeyMap::KEY_LIMIT_TIMELINE    => { key => 'L',     desc => 'Limit timeline with expression. Enter "all" to remove the limit.' },
+		BaconBird::KeyMap::KEY_FOLLOWERS         => { key => 'E',     desc => 'Show users following me' },
+		BaconBird::KeyMap::KEY_FRIENDS           => { key => 'I',     desc => 'Show users I follow' },
 		BaconBird::KeyMap::KEY_YES               => { key => 'y',     internal => 1 },
 		BaconBird::KeyMap::KEY_NO                => { key => 'n',     internal => 1 },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },

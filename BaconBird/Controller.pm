@@ -281,5 +281,23 @@ sub destroy_status {
 	$self->model->destroy_status($tweetid);
 }
 
+sub friends {
+	my $self = shift;
+	my (%args) = @_;
+	return $self->model->list_friends(%args);
+}
+
+sub followers {
+	my $self = shift;
+	my (%args) = @_;
+	return $self->model->list_followers(%args);
+}
+
+sub get_user_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->model->get_user_by_id($id);
+}
+
 no Moose;
 1;

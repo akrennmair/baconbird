@@ -21,6 +21,8 @@ use constant RT_OF_ME_TIMELINE  => 9;
 use constant MY_TIMELINE        => 10;
 use constant LOAD_SEARCH        => 11;
 use constant SAVED_SEARCH       => 12;
+use constant FOLLOWERS          => 13;
+use constant FRIENDS            => 14;
 
 use Net::Twitter;
 use I18N::Langinfo qw(langinfo CODESET);
@@ -165,6 +167,7 @@ has 'rt_by_me_timeline_ts' => (
 has 'rt_of_me_timeline' => (
 	is => 'rw',
 	isa => 'ArrayRef',
+	default => sub { [ ] },
 );
 
 has 'rt_of_me_timeline_ts' => (
@@ -176,12 +179,31 @@ has 'rt_of_me_timeline_ts' => (
 has 'my_timeline' => (
 	is => 'rw',
 	isa => 'ArrayRef',
+	default => sub { [ ] },
 );
 
 has 'my_timeline_ts' => (
 	is => 'rw',
 	isa => 'Int',
 	default => 0,
+);
+
+has 'friends' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
+has 'followers' => (
+	is => 'rw',
+	isa => 'ArrayRef',
+	default => sub { [ ] },
+);
+
+has 'all_users' => (
+	is => 'rw',
+	isa => 'HashRef',
+	default => sub { { } },
 );
 
 sub login {
@@ -782,6 +804,50 @@ sub destroy_direct_message {
 	if (my $err = $@) {
 		return 1;
 	}
+}
+
+sub list_friends {
+	my $self = shift;
+	my (%args) = @_;
+
+	my @friends;
+	for ( my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor} ) {
+		$r = $self->nt->friends({ cursor => $cursor });
+		$self->add_new_users($r->{users});
+		push @friends, @{ $r->{users} };
+	}
+
+	return \@friends;
+}
+
+sub list_followers {
+	my $self = shift;
+	my (%args) = @_;
+
+	my @followers;
+	for ( my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor} ) {
+		$r = $self->nt->followers({ cursor => $cursor });
+		$self->add_new_users($r->{users});
+		push @followers, @{ $r->{users} };
+	}
+
+	return \@followers;
+}
+
+sub add_new_users {
+	my $self = shift;
+	my ($users) = @_;
+
+	foreach my $u (@$users) {
+		$self->all_users->{$u->{id}} = $u;
+	}
+}
+
+sub get_user_by_id {
+	my $self = shift;
+	my ($id) = @_;
+	return $self->all_users->{$id} if $id;
+	return undef;
 }
 
 no Moose;

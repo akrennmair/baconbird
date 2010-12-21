@@ -69,6 +69,21 @@ use constant HELP_LOAD_SEARCH => [
 	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
 ];
 
+use constant HELP_FRIENDS => [
+	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "Show timeline" },
+	{ key => BaconBird::KeyMap::KEY_UNFOLLOW, desc => "Unfollow" },
+	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Direct Message" },
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Close" },
+];
+
+use constant HELP_FOLLOWERS => [
+	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "Show timeline" },
+	{ key => BaconBird::KeyMap::KEY_FOLLOW, desc => "Follow" },
+	{ key => BaconBird::KeyMap::KEY_UNFOLLOW, desc => "Unfollow" },
+	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Direct Message" },
+	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Close" },
+];
+
 use Data::Dumper;
 
 has 'f' => (
@@ -157,6 +172,18 @@ has 'current_tweet' => (
 	default => '',
 );
 
+has 'is_followers' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
+
+has 'is_friends' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -234,11 +261,15 @@ sub next_event {
 		if ($focus eq "tweetinput") {
 			$self->set_remaining($self->f->get("inputfield"));
 		}
-		if ($focus eq "tweets") {
+		if ($focus eq "tweets" || $self->is_friends || $self->is_followers) {
 			$self->update_info_line($tweetid);
 		}
 	}
-	$self->update_view($tweetid);
+	if ($self->is_friends || $self->is_followers) {
+		$self->update_user_view($tweetid);
+	} else {
+		$self->update_view($tweetid);
+	}
 
 	return unless defined($e);
 
@@ -285,6 +316,26 @@ sub next_event {
 			$self->ctrl->destroy_saved_search($searchid);
 			$self->status_msg("Deleted saved search.");
 			$self->show_load_search;
+		}
+		return;
+	} elsif ($self->is_followers) {
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+			$self->close_followers;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
+			$self->toggle_view;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
+			$self->close_friends;
+			$self->show_user_timeline_from_user($tweetid);
+		}
+		return;
+	} elsif ($self->is_friends) {
+		if ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_QUIT)) {
+			$self->close_friends;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
+			$self->toggle_view;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
+			$self->close_friends;
+			$self->show_user_timeline_from_user($tweetid);
 		}
 		return;
 	} else {
@@ -514,6 +565,12 @@ sub next_event {
 				$self->limit_expression($expression);
 				$self->get_timeline;
 			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FRIENDS)) {
+			$self->status_msg("Loading users I follow...");
+			$self->show_friends;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOWERS)) {
+			$self->status_msg("Loading users who follow me...");
+			$self->show_followers;
 		}
 	}
 }
@@ -673,6 +730,9 @@ sub do_reply {
 sub get_timeline {
 	my $self = shift;
 	my ($preserve_position) = @_;
+
+	return if ($self->is_friends || $self->is_followers);
+
 	my $tweetid = $self->f->get("tweetid");
 	if ($preserve_position && $tweetid) {
 		$self->current_tweet($tweetid);
@@ -701,6 +761,8 @@ sub set_caption {
 					BaconBird::Model::RT_OF_ME_TIMELINE => "Retweets of me",
 					BaconBird::Model::MY_TIMELINE => "My timeline",
 					BaconBird::Model::LOAD_SEARCH => "Load Saved Search",
+					BaconBird::Model::FRIENDS => "Users I Follow",
+					BaconBird::Model::FOLLOWERS => "Users Following Me",
 				);
 	$self->f->set("current_view", $caption{$view} || "BUG! UNKNOWN VIEW!");
 }
@@ -725,7 +787,17 @@ sub update_info_line {
 
 	my $str = ">> ";
 
-	if ($self->ctrl->is_direct_message) {
+	if ($self->is_followers || $self->is_friends) {
+		my $user = $self->ctrl->get_user_by_id($tweetid);
+		my $screen_name = $user->screen_name;
+		$str .= "@" . $screen_name;
+		$str .= " (" . $user->{name} . ")" if $user->{name};
+		if ($user->{location}) {
+			$str .= " - " . $user->{location};
+		}
+
+		$str .= " | http://twitter.com/" . $screen_name;
+	} elsif ($self->ctrl->is_direct_message) {
 		my $dm = $self->ctrl->get_dm_by_id($tweetid);
 
 		if ($dm) {
@@ -1164,6 +1236,124 @@ sub close_load_search {
 	# TODO: set_shorthelp
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
+}
+
+sub show_friends {
+	my $self = shift;
+
+	my $form_style = $self->form_style;
+
+	$self->is_friends(1);
+	$self->set_shorthelp(HELP_FRIENDS);
+	$self->set_caption(BaconBird::Model::FRIENDS);
+	$self->f->set("infoline", ">> ");
+	$self->f->modify("tweets", "replace", "{list[friends] $form_style}");
+
+	my $list = "{list";
+
+	foreach my $user (@{$self->ctrl->friends}) {
+		my $text;
+
+		my $screen_name = $user->{screen_name} || "";
+		my $following   = $user->{follow_request_sent}   || "";
+		my $description = $user->{description} || "";
+
+		$text .= sprintf("[%16s] %s", "@" . $screen_name, $description);
+		$text =~ s/[\r\n]+/ /g;
+		$text =~ s/\</<>/g;
+		$list .= "{listitem[" .  $user->{id} . "] text:" . stfl::quote($text) . "}";
+	}
+
+	$list .= "}";
+
+	$self->f->modify("friends", "replace_inner", $list);
+	$self->status_msg("");
+}
+
+sub close_friends {
+	my $self = shift;
+	$self->is_friends(0);
+
+	my $form_style = $self->form_style;
+	$self->f->modify("friends", "replace", "{list[tweets] $form_style}");
+	# TODO: set_shorthelp
+	$self->set_shorthelp_by_tl($self->timeline);
+	$self->get_timeline;
+}
+
+sub show_followers {
+	my $self = shift;
+
+	my $form_style = $self->form_style;
+
+	$self->is_followers(1);
+	$self->set_shorthelp(HELP_FOLLOWERS);
+	$self->set_caption(BaconBird::Model::FOLLOWERS);
+	$self->f->set("infoline", ">> ");
+	$self->f->modify("tweets", "replace", "{list[followers] $form_style}");
+
+	my $list = "{list";
+
+	foreach my $user (@{$self->ctrl->followers}) {
+		my $text;
+
+		$text .= sprintf("[%16s] (%1s) %s", "@" . $user->{screen_name}, $user->{following} ? 'F' : ' ', $user->{description} || '');
+		$text =~ s/[\r\n]+/ /g;
+		$text =~ s/\</<>/g;
+		$list .= "{listitem[" .  $user->{id} . "] text:" . stfl::quote($text) . "}";
+	}
+
+	$list .= "}";
+
+	$self->f->modify("followers", "replace_inner", $list);
+	$self->status_msg("");
+}
+
+sub close_followers {
+	my $self = shift;
+	$self->is_followers(0);
+
+	my $form_style = $self->form_style;
+	$self->f->modify("followers", "replace", "{list[tweets] $form_style}");
+	# TODO: set_shorthelp
+	$self->set_shorthelp_by_tl($self->timeline);
+	$self->get_timeline;
+}
+
+sub update_user_view {
+	my $self = shift;
+	my ($userid) = @_;
+
+	return unless defined($userid);
+
+	my @lines;
+
+	my $user = $self->ctrl->get_user_by_id($userid);
+
+	my $text = '';
+	$text = $user->status->text if ($user->{status} and $user->status->{text});
+	my $retweeted_by;
+	$retweeted_by = $user->status->{retweeted_by} if ($user->{status} and $user->status->{retweeted_by});
+
+	push(@lines, $self->split_lines($text, int($self->f->get("root:w"))));
+	push(@lines, "");
+	if (defined($retweeted_by) && scalar(@$retweeted_by) > 0) {
+		push(@lines, $self->format_retweeters($retweeted_by));
+	}
+	push(@lines, $self->fill_user($user->{screen_name}, $user));
+
+	$self->f->modify("tweetview", "replace_inner", $self->stfl_listify(\@lines));
+}
+
+sub show_user_timeline_from_user {
+	my $self = shift;
+	my $userid = (@_);
+	my $user = $self->ctrl->get_user_by_id($userid);
+
+	my $screen_name = $user->{screen_name};
+
+	$self->ctrl->set_user_name($screen_name);
+	$self->load_timeline(BaconBird::Model::USER_TIMELINE);
 }
 
 no Moose;
