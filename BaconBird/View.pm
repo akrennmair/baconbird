@@ -1002,6 +1002,7 @@ sub close_help {
 	my $form_style = $self->form_style;
 	$self->f->modify("help", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
+	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
 }
@@ -1234,6 +1235,7 @@ sub close_load_search {
 	my $form_style = $self->form_style;
 	$self->f->modify("load_search", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
+	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
 }
@@ -1277,6 +1279,7 @@ sub close_friends {
 	my $form_style = $self->form_style;
 	$self->f->modify("friends", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
+	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
 }
@@ -1316,6 +1319,7 @@ sub close_followers {
 	my $form_style = $self->form_style;
 	$self->f->modify("followers", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
+	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
 }
