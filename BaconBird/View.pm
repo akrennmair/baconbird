@@ -295,17 +295,15 @@ sub next_event {
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_YES) ||
 			$e eq $self->ctrl->key(BaconBird::KeyMap::KEY_ENTER)
 		) {
-			my $searchid = $self->f->get("tweetid");
 			$self->close_load_search;
-			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($searchid);
+			my $searchphrase = $self->ctrl->get_query_from_saved_search_id($tweetid);
 			$self->status_msg("Loading saved search $searchphrase...");
 			$self->ctrl->set_search_phrase($searchphrase);
 			$self->load_timeline(BaconBird::Model::SEARCH_RESULTS);
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_DELETE_ITEM)) {
 			$self->set_lastline;
-			my $searchid = $self->f->get("tweetid");
 			$self->status_msg("Deleting saved search...");
-			$self->ctrl->destroy_saved_search($searchid);
+			$self->ctrl->destroy_saved_search($tweetid);
 			$self->status_msg("Deleted saved search.");
 			$self->show_load_search;
 		}
