@@ -156,11 +156,6 @@ has 'keybindings' => (
 	isa => 'Str',
 );
 
-has 'form_style' => (
-	is => 'rw',
-	isa => 'Str',
-);
-
 has 'limit_expression' => (
 	is => 'rw',
 	isa => 'Str',
@@ -188,11 +183,8 @@ sub BUILD {
 	my $self = shift;
 
 	my $keybindings = 'bind_up:"** k" bind_down:"** j" bind_page_down:"** RIGHT" bind_page_up:"** LEFT"';
-
-	my $form_style = "style_focus[listfocus]:fg=yellow,bg=blue,attr=bold $keybindings .expand:vh pos_name[tweetid]: pos[tweetpos]:0 richtext:1";
-
 	$self->keybindings($keybindings);
-	$self->form_style($form_style);
+	my $form_style = $self->get_form_style;
 
 	$self->f(stfl::create( <<"EOT" ));
 vbox[root]
@@ -999,7 +991,7 @@ sub close_help {
 	my $self = shift;
 	$self->is_help(0);
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 	$self->f->modify("help", "replace", "{list[tweets] $form_style}");
 	# TODO: set_shorthelp
 	$self->set_caption($self->timeline);
@@ -1203,7 +1195,7 @@ sub matches_hidden {
 sub show_load_search {
 	my $self = shift;
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 
 	$self->is_load_search(1);
 	$self->set_shorthelp(HELP_LOAD_SEARCH);
@@ -1232,9 +1224,9 @@ sub close_load_search {
 	my $self = shift;
 	$self->is_load_search(0);
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 	$self->f->modify("load_search", "replace", "{list[tweets] $form_style}");
-	# TODO: set_shorthelp
+
 	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1243,7 +1235,7 @@ sub close_load_search {
 sub show_friends {
 	my $self = shift;
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 
 	$self->is_friends(1);
 	$self->set_shorthelp(HELP_FRIENDS);
@@ -1276,9 +1268,9 @@ sub close_friends {
 	my $self = shift;
 	$self->is_friends(0);
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 	$self->f->modify("friends", "replace", "{list[tweets] $form_style}");
-	# TODO: set_shorthelp
+
 	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1287,7 +1279,7 @@ sub close_friends {
 sub show_followers {
 	my $self = shift;
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 
 	$self->is_followers(1);
 	$self->set_shorthelp(HELP_FOLLOWERS);
@@ -1316,9 +1308,9 @@ sub close_followers {
 	my $self = shift;
 	$self->is_followers(0);
 
-	my $form_style = $self->form_style;
+	my $form_style = $self->get_form_style;
 	$self->f->modify("followers", "replace", "{list[tweets] $form_style}");
-	# TODO: set_shorthelp
+
 	$self->set_caption($self->timeline);
 	$self->set_shorthelp_by_tl($self->timeline);
 	$self->get_timeline;
@@ -1358,6 +1350,17 @@ sub show_user_timeline_from_user {
 
 	$self->ctrl->set_user_name($screen_name);
 	$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+}
+
+sub get_form_style {
+	my $self = shift;
+	my ($type) = @_;
+
+	my $keybindings = $self->keybindings;
+
+	$type ||= "tweetid";
+
+	return "style_focus[listfocus]:fg=yellow,bg=blue,attr=bold $keybindings .expand:vh pos_name[$type]: pos[tweetpos]:0 richtext:1"
 }
 
 no Moose;
