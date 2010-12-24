@@ -299,5 +299,15 @@ sub get_user_by_id {
 	return $self->model->get_user_by_id($id);
 }
 
+sub reset_followers {
+	my $self = shift;
+	$self->model->reset_followers;
+}
+
+sub reset_friends {
+	my $self = shift;
+	$self->model->reset_friends;
+}
+
 no Moose;
 1;

@@ -72,7 +72,7 @@ use constant HELP_LOAD_SEARCH => [
 use constant HELP_FRIENDS => [
 	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "Show timeline" },
 	{ key => BaconBird::KeyMap::KEY_UNFOLLOW, desc => "Unfollow" },
-	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Direct Message" },
+	{ key => BaconBird::KeyMap::KEY_SEND, desc => "Direct Message" },
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Close" },
 ];
 
@@ -80,7 +80,7 @@ use constant HELP_FOLLOWERS => [
 	{ key => BaconBird::KeyMap::KEY_SHOW_USER, desc => "Show timeline" },
 	{ key => BaconBird::KeyMap::KEY_FOLLOW, desc => "Follow" },
 	{ key => BaconBird::KeyMap::KEY_UNFOLLOW, desc => "Unfollow" },
-	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Direct Message" },
+	{ key => BaconBird::KeyMap::KEY_SEND, desc => "Direct Message" },
 	{ key => BaconBird::KeyMap::KEY_QUIT, desc => "Close" },
 ];
 
@@ -316,6 +316,28 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
 			$self->show_user_timeline_from_user;
 			$self->close_followers;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOW)) {
+			$self->follow_from_user;
+			$self->ctrl->reset_friends;
+			$self->ctrl->reset_followers;
+			$self->show_followers;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_UNFOLLOW)) {
+			$self->unfollow_from_user;
+			$self->ctrl->reset_friends;
+			$self->ctrl->reset_followers;
+			$self->show_followers;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
+			my $userid = $self->f->get("tweetid");
+			my $user = $self->ctrl->get_user_by_id($userid);
+			my $screen_name = $user->{screen_name};
+			$self->allow_shorten(1);
+			$self->set_input_field("DM to \@$screen_name: ", "", "end-input-dm-rcpt");
+			$self->saved_rcpt($screen_name);
+		} elsif ($e eq 'end-input-dm-rcpt') {
+			my $tweet = $self->f->get("inputfield");
+			$self->set_lastline;
+			$self->set_shorthelp(HELP_DM);
+			$self->send_dm($tweet);
 		}
 		return;
 	} elsif ($self->is_friends) {
@@ -326,6 +348,23 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
 			$self->show_user_timeline_from_user;
 			$self->close_friends;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_UNFOLLOW)) {
+			$self->unfollow_from_user;
+			$self->ctrl->reset_friends;
+			$self->ctrl->reset_followers;
+			$self->show_friends;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SEND)) {
+			my $userid = $self->f->get("tweetid");
+			my $user = $self->ctrl->get_user_by_id($userid);
+			my $screen_name = $user->{screen_name};
+			$self->allow_shorten(1);
+			$self->set_input_field("DM to \@$screen_name: ", "", "end-input-dm-rcpt");
+			$self->saved_rcpt($screen_name);
+		} elsif ($e eq 'end-input-dm-rcpt') {
+			my $tweet = $self->f->get("inputfield");
+			$self->set_lastline;
+			$self->set_shorthelp(HELP_DM);
+			$self->send_dm($tweet);
 		}
 		return;
 	} else {
@@ -1353,6 +1392,30 @@ sub show_user_timeline_from_user {
 
 	$self->ctrl->set_user_name($screen_name);
 	$self->load_timeline(BaconBird::Model::USER_TIMELINE);
+}
+
+sub unfollow_from_user {
+	my $self = shift;
+	my $userid = $self->f->get("tweetid");
+
+	my $user = $self->ctrl->get_user_by_id($userid);
+	my $screen_name = $user->{screen_name};
+
+	$self->status_msg("Unfollowing $screen_name...");
+	$self->ctrl->unfollow_user($screen_name);
+	$self->status_msg("");
+}
+
+sub follow_from_user {
+	my $self = shift;
+	my $userid = $self->f->get("tweetid");
+
+	my $user = $self->ctrl->get_user_by_id($userid);
+	my $screen_name = $user->{screen_name};
+
+	$self->status_msg("Following $screen_name...");
+	$self->ctrl->follow_user($screen_name);
+	$self->status_msg("");
 }
 
 sub get_form_style {

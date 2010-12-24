@@ -194,10 +194,22 @@ has 'friends' => (
 	default => sub { [ ] },
 );
 
+has 'friends_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
+);
+
 has 'followers' => (
 	is => 'rw',
 	isa => 'ArrayRef',
 	default => sub { [ ] },
+);
+
+has 'followers_ts' => (
+	is => 'rw',
+	isa => 'Int',
+	default => 0,
 );
 
 has 'all_users' => (
@@ -810,28 +822,36 @@ sub list_friends {
 	my $self = shift;
 	my (%args) = @_;
 
-	my @friends;
-	for ( my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor} ) {
-		$r = $self->nt->friends({ cursor => $cursor });
-		$self->add_new_users($r->{users});
-		push @friends, @{ $r->{users} };
+	my $friends = $self->friends;
+	if (($self->friends_ts + DEFAULT_WAIT_TIME * 60) < time) {
+		for (my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor}) {
+			$r = $self->nt->friends({ cursor => $cursor });
+			$self->add_new_users($r->{users});
+			push @$friends, @{ $r->{users} };
+		}
+
+		$self->friends_ts(time);
 	}
 
-	return \@friends;
+	return $friends;
 }
 
 sub list_followers {
 	my $self = shift;
 	my (%args) = @_;
 
-	my @followers;
-	for ( my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor} ) {
-		$r = $self->nt->followers({ cursor => $cursor });
-		$self->add_new_users($r->{users});
-		push @followers, @{ $r->{users} };
+	my $followers = $self->followers;
+	if (($self->followers_ts + DEFAULT_WAIT_TIME * 60) < time) {
+		for (my $cursor = -1, my $r; $cursor; $cursor = $r->{next_cursor}) {
+			$r = $self->nt->followers({ cursor => $cursor });
+			$self->add_new_users($r->{users});
+			push @$followers, @{ $r->{users} };
+		}
+
+		$self->followers_ts(time);
 	}
 
-	return \@followers;
+	return $followers;
 }
 
 sub add_new_users {
@@ -848,6 +868,18 @@ sub get_user_by_id {
 	my ($id) = @_;
 	return $self->all_users->{$id} if $id;
 	return undef;
+}
+
+sub reset_followers {
+	my $self = shift;
+	$self->followers_ts(0);
+	$self->followers([]);
+}
+
+sub reset_friends {
+	my $self = shift;
+	$self->friends_ts(0);
+	$self->friends([]);
 }
 
 no Moose;
