@@ -148,6 +148,14 @@ been retweeted.
 
 If you want to see all your tweets, you can press C<8>.
 
+=head4 Friends
+
+To see your friends (users you follow), press C<I>.
+
+=head4 Followers
+
+To see who follows you, press C<E>.
+
 =head3 Functions
 
 =head4 Automatic Reloads
