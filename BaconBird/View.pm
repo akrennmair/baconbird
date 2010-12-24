@@ -314,8 +314,8 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
 			$self->toggle_view;
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
-			$self->close_friends;
-			$self->show_user_timeline_from_user($tweetid);
+			$self->show_user_timeline_from_user;
+			$self->close_followers;
 		}
 		return;
 	} elsif ($self->is_friends) {
@@ -324,8 +324,8 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_VIEW)) {
 			$self->toggle_view;
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHOW_USER)) {
+			$self->show_user_timeline_from_user;
 			$self->close_friends;
-			$self->show_user_timeline_from_user($tweetid);
 		}
 		return;
 	} else {
@@ -1247,13 +1247,13 @@ sub show_friends {
 		my $text;
 
 		my $screen_name = $user->{screen_name} || "";
-		my $following   = $user->{follow_request_sent}   || "";
 		my $description = $user->{description} || "";
+		my $userid      = $user->{id} || "";
 
 		$text .= sprintf("[%16s] %s", "@" . $screen_name, $description);
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
-		$list .= "{listitem[" .  $user->{id} . "] text:" . stfl::quote($text) . "}";
+		$list .= "{listitem[" .  $userid . "] text:" . stfl::quote($text) . "}";
 	}
 
 	$list .= "}";
@@ -1290,10 +1290,15 @@ sub show_followers {
 	foreach my $user (@{$self->ctrl->followers}) {
 		my $text;
 
-		$text .= sprintf("[%16s] (%1s) %s", "@" . $user->{screen_name}, $user->{following} ? 'F' : ' ', $user->{description} || '');
+		my $screen_name = $user->{screen_name} || "";
+		my $following   = $user->{following}   || "";
+		my $description = $user->{description} || "";
+		my $userid      = $user->{id} || "";
+
+		$text .= sprintf("[%16s] (%1s) %s", "@" . $screen_name, $following ? 'F' : ' ', $description);
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
-		$list .= "{listitem[" .  $user->{id} . "] text:" . stfl::quote($text) . "}";
+		$list .= "{listitem[" .  $userid . "] text:" . stfl::quote($text) . "}";
 	}
 
 	$list .= "}";
@@ -1341,9 +1346,9 @@ sub update_user_view {
 
 sub show_user_timeline_from_user {
 	my $self = shift;
-	my $userid = (@_);
-	my $user = $self->ctrl->get_user_by_id($userid);
+	my $userid = $self->f->get("tweetid");
 
+	my $user = $self->ctrl->get_user_by_id($userid);
 	my $screen_name = $user->{screen_name};
 
 	$self->ctrl->set_user_name($screen_name);
