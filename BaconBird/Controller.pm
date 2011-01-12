@@ -6,6 +6,14 @@ use IO::Handle;
 has 'model' => (
 	is => 'rw',
 	isa => 'BaconBird::Model',
+	handles => [qw(login lookup_author get_timeline select_timeline 
+				get_message_by_id get_dm_by_id is_direct_message send_dm 
+				set_search_phrase get_search_phrase set_user_name 
+				get_user_name toggle_favorite follow_user unfollow_user 
+				create_saved_search saved_searches destroy_saved_search 
+				get_query_from_saved_search_id destroy_direct_message 
+				destroy_status reset_followers reset_friends)
+			],
 );
 
 has 'view' => (
@@ -16,11 +24,15 @@ has 'view' => (
 has 'shortener' => (
 	is => 'rw',
 	isa => 'BaconBird::Shortener',
+	handles => {
+		shorten => 'shorten_text',
+	},
 );
 
 has 'keymap' => (
 	is => 'rw',
 	isa => 'BaconBird::KeyMap',
+	handles => [qw(key get_help_desc)],
 );
 
 has 'pinfile' => (
@@ -131,11 +143,6 @@ sub get_pin {
 	return $pin;
 }
 
-sub login {
-	my $self = shift;
-	$self->model->login;
-}
-
 sub post_update {
 	my $self = shift;
 	my ($tweet, $in_reply_to_status_id) = @_;
@@ -148,137 +155,6 @@ sub retweet {
 	my ($tweetid) = @_;
 	$self->model->retweet($tweetid);
 	$self->reload_all_and_update_view;
-}
-
-sub lookup_author {
-	my $self = shift;
-	my ($tweetid) = @_;
-	return $self->model->lookup_author($tweetid);
-}
-
-sub get_timeline {
-	my $self = shift;
-	return $self->model->get_timeline;
-}
-
-sub select_timeline {
-	my $self = shift;
-	my ($timeline) = @_;
-	$self->model->select_timeline($timeline);
-}
-
-sub get_message_by_id {
-	my $self = shift;
-	my ($id) = @_;
-	return $self->model->get_message_by_id($id);
-}
-
-sub get_dm_by_id {
-	my $self = shift;
-	my ($id) = @_;
-	return $self->model->get_dm_by_id($id);
-}
-
-sub shorten {
-	my $self = shift;
-	my ($text) = @_;
-	return $self->shortener->shorten_text($text);
-}
-
-sub is_direct_message {
-	my $self = shift;
-	return $self->model->is_direct_message;
-}
-
-sub send_dm {
-	my $self = shift;
-	my ($tweet, $rcpt) = @_;
-	$self->model->send_dm($tweet, $rcpt);
-}
-
-sub set_search_phrase {
-	my $self = shift;
-	my ($searchphrase) = @_;
-	$self->model->set_search_phrase($searchphrase);
-}
-
-sub get_search_phrase {
-	my $self = shift;
-	return $self->model->get_search_phrase;
-}
-
-sub set_user_name {
-	my $self = shift;
-	my ($name) = @_;
-	$self->model->set_user_name($name);
-};
-
-sub get_user_name {
-	my $self = shift;
-	return $self->model->get_user_name;
-}
-
-sub toggle_favorite {
-	my $self = shift;
-	my ($tweetid) = @_;
-	$self->model->toggle_favorite($tweetid);
-}
-
-sub key {
-	my $self = shift;
-	my ($op) = @_;
-	return $self->keymap->key($op);
-}
-
-sub get_help_desc {
-	my $self = shift;
-	return $self->keymap->get_help_desc;
-}
-
-sub follow_user {
-	my $self = shift;
-	my ($screen_name) = @_;
-	$self->model->follow_user($screen_name);
-}
-
-sub unfollow_user {
-	my $self = shift;
-	my ($screen_name) = @_;
-	$self->model->unfollow_user($screen_name);
-}
-
-sub create_saved_search {
-	my $self = shift;
-	$self->model->create_saved_search;
-}
-
-sub saved_searches {
-	my $self = shift;
-	$self->model->saved_searches;
-}
-
-sub destroy_saved_search {
-	my $self = shift;
-	my ($searchid) = @_;
-	$self->model->destroy_saved_search($searchid);
-}
-
-sub get_query_from_saved_search_id {
-	my $self = shift;
-	my ($searchid) = @_;
-	return $self->model->get_query_from_saved_search_id($searchid);
-}
-
-sub destroy_direct_message {
-	my $self = shift;
-	my ($tweetid) = @_;
-	$self->model->destroy_direct_message($tweetid);
-}
-
-sub destroy_status {
-	my $self = shift;
-	my ($tweetid) = @_;
-	$self->model->destroy_status($tweetid);
 }
 
 sub friends {
@@ -297,16 +173,6 @@ sub get_user_by_id {
 	my $self = shift;
 	my ($id) = @_;
 	return $self->model->get_user_by_id($id);
-}
-
-sub reset_followers {
-	my $self = shift;
-	$self->model->reset_followers;
-}
-
-sub reset_friends {
-	my $self = shift;
-	$self->model->reset_friends;
 }
 
 no Moose;
