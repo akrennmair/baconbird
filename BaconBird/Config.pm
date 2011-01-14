@@ -32,6 +32,7 @@ sub BUILD {
 		$self->configdata(\%config);
 		undef $conf;
 	};
+	$self->configdata({ }) if not $self->configdata;
 	warn $@ if $@;
 }
 
