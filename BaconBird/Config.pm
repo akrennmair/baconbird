@@ -23,6 +23,7 @@ sub BUILD {
 	my $self = shift;
 	$self->default_config({
 			"browser"      => "links %u",
+			"editor"       => undef,
 			"count"        => 50,
 			"confirm_quit" => 0,
 	});

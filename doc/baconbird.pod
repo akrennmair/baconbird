@@ -318,6 +318,8 @@ current bindings.
 
 =item * C<d>: Delete item.
 
+=item * C<Ctrl-T>: Edit tweet in an external editor.
+
 =back
 
 =head2 Configuration
@@ -330,6 +332,10 @@ options are supported:
 =item * browser
 
 	browser = "links %u"
+
+=item * editor
+
+	editor = 'vim'
 
 =item * filters
 

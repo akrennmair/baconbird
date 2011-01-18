@@ -41,6 +41,7 @@ use constant KEY_NO              => 34;
 use constant KEY_LIMIT_TIMELINE  => 35;
 use constant KEY_FOLLOWERS       => 36;
 use constant KEY_FRIENDS         => 37;
+use constant KEY_EDIT_EXTERNAL   => 38;
 
 has 'keymap' => (
 	is => 'rw',
@@ -89,6 +90,7 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_LIMIT_TIMELINE    => { key => 'L',     desc => 'Limit timeline with expression. Enter "all" to remove the limit.' },
 		BaconBird::KeyMap::KEY_FOLLOWERS         => { key => 'E',     desc => 'Show users following me' },
 		BaconBird::KeyMap::KEY_FRIENDS           => { key => 'I',     desc => 'Show users I follow' },
+		BaconBird::KeyMap::KEY_EDIT_EXTERNAL     => { key => '^T',    desc => 'Edit tweet in external editor' },
 		BaconBird::KeyMap::KEY_YES               => { key => 'y',     internal => 1 },
 		BaconBird::KeyMap::KEY_NO                => { key => 'n',     internal => 1 },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
