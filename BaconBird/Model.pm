@@ -402,7 +402,10 @@ sub get_rate_limit {
 
 sub get_wait_time {
 	my $self = shift;
-	my $waittime = int((($self->nt->rate_reset - time) / $self->nt->rate_remaining) * 1.5);
+	my $waittime = 0;
+	if ($self->nt->rate_remaining > 0) {
+		$waittime = int((($self->nt->rate_reset - time) / $self->nt->rate_remaining) * 1.5);
+	}
 	$waittime = MIN_WAIT_TIME if $waittime < MIN_WAIT_TIME;
 	return $waittime;
 }

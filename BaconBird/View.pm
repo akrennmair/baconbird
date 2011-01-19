@@ -5,6 +5,7 @@ use stfl;
 use HTML::Strip;
 use Text::Wrap;
 use URI::Find;
+use File::Temp qw/ :POSIX /;
 
 use BaconBird::KeyMap;
 use BaconBird::Model;
@@ -50,6 +51,7 @@ use constant HELP_TWEET => [
 	{ key => BaconBird::KeyMap::KEY_CANCEL, desc => "Cancel" },
 	{ key => BaconBird::KeyMap::KEY_ENTER, desc => "Send" },
 	{ key => BaconBird::KeyMap::KEY_SHORTEN, desc => "Shorten URLs" },
+	{ key => BaconBird::KeyMap::KEY_EDIT_EXTERNAL, desc => "Open Editor" },
 ];
 
 use constant HELP_USERNAME => [
@@ -425,6 +427,10 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_SHORTEN)) {
 			if ($self->f->get_focus eq "tweetinput") {
 				$self->shorten;
+			}
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_EDIT_EXTERNAL)) {
+			if ($self->f->get_focus eq "tweetinput") {
+				$self->call_external_editor;
 			}
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_HOME_TIMELINE)) {
 			$self->load_timeline(BaconBird::Model::HOME_TIMELINE);
@@ -1427,6 +1433,33 @@ sub get_form_style {
 	$type ||= "tweetid";
 
 	return "style_focus[listfocus]:fg=yellow,bg=blue,attr=bold $keybindings .expand:vh pos_name[$type]: pos[tweetpos]:0 richtext:1"
+}
+
+sub call_external_editor {
+	my $self = shift;
+	my $filename = tmpnam();
+
+	# editor priority:
+	# 1. configuration file
+	my $editor = $self->config->get_value("editor");
+	# 2. $EDITOR
+	$editor = $ENV{EDITOR} unless defined($editor);
+	# 3. default "vi"
+	$editor = "vi" unless($editor);
+
+	return if !$filename;
+
+	open(my $fh, '>', $filename) or return;
+	print $fh $self->f->get("inputfield");
+	close($fh);
+
+	stfl::reset();
+	system($editor, $filename);
+
+	open($fh, '<', $filename) or return;
+	my @lines = <$fh>;
+	my $newtext = join(" ", map { chomp($_); $_; } @lines);
+	$self->f->set("inputfield", $newtext);
 }
 
 no Moose;
