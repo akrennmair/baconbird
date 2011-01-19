@@ -181,6 +181,12 @@ has 'is_friends' => (
 	default => 0,
 );
 
+has 'is_view' => (
+	is => 'rw',
+	isa => 'Bool',
+	default => 0,
+);
+
 sub BUILD {
 	my $self = shift;
 
@@ -1012,6 +1018,8 @@ sub show_help {
 
 	my $keybindings = $self->keybindings;
 
+	$self->close_view if ($self->is_view);
+
 	$self->is_help(1);
 	$self->set_shorthelp(HELP_HELP);
 	$self->set_caption(BaconBird::Model::HELP);
@@ -1085,13 +1093,23 @@ sub get_current_tweet_screen_name {
 sub toggle_view {
 	my $self = shift;
 
-	my $enabled = $self->f->get("displayview");
-
-	if ($enabled eq "0") {
-		$self->f->set("displayview", "1");
+	if ($self->is_view) {
+		$self->close_view;
 	} else {
-		$self->f->set("displayview", "0");
+		$self->show_view;
 	}
+}
+
+sub show_view {
+	my $self = shift;
+	$self->is_view(1);
+	$self->f->set("displayview", "1");
+}
+
+sub close_view {
+	my $self = shift;
+	$self->is_view(0);
+	$self->f->set("displayview", "0");
 }
 
 sub update_view {
