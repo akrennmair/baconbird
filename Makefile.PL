@@ -16,5 +16,6 @@ WriteMakefile (
 			'HTML::Strip' => '1.06',
 			'IO::Socket::SSL' => '1.16',
 			'Config::General' => '2.40',
+			'String::Format' => '1.16',
 	}
 );

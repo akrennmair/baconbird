@@ -25,6 +25,7 @@ sub BUILD {
 			"browser"      => "links %u",
 			"editor"       => undef,
 			"count"        => 50,
+			"timeline_format" => "%F%R[%16u] %t",
 			"confirm_quit" => 0,
 	});
 	eval {

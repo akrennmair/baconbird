@@ -6,6 +6,7 @@ use HTML::Strip;
 use Text::Wrap;
 use URI::Find;
 use File::Temp qw/ :POSIX /;
+use String::Format;
 
 use BaconBird::KeyMap;
 use BaconBird::Model;
@@ -684,6 +685,8 @@ sub set_timeline {
 	my $list = "{list ";
 
 	foreach my $tweet (@$tl) {
+		my %fmt;
+
 		my $username = $tweet->{user}{screen_name} || $tweet->{sender}{screen_name} || $tweet->{from_user};
 
 		if ($re and $tweet->{text} !~ m/$re/ and $username !~ m/$re/) {
@@ -695,23 +698,28 @@ sub set_timeline {
 			$position = $pos;
 		}
 
-		my $text;
+		$fmt{i} = $pos + 1;
+
+		$fmt{d} = sub { $tweet->created_at->strftime($_[0]) };
 
 		if ($tweet->{favorited}) {
-			$text .= "!";
+			$fmt{F} = "!";
 		} else {
-			$text .= " ";
+			$fmt{F} = " ";
 		}
 
 		if ($tweet->{retweeted} ||
 			($tweet->{retweet_count} && $tweet->{retweet_count} ne '0')
 		) {
-			$text .= "R";
+			$fmt{R} = "R";
 		} else {
-			$text .= " ";
+			$fmt{R} = " ";
 		}
 
-		$text .= sprintf("[%16s] %s", "@" . $username, $tweet->{text});
+		$fmt{u} = "@" . $username;
+		$fmt{t} = $tweet->{text};
+
+		my $text = stringf($self->config->get_value("timeline_format"), %fmt);
 		$text =~ s/[\r\n]+/ /g;
 		$text =~ s/\</<>/g;
 		if (!$self->matches_hidden($text)) {
