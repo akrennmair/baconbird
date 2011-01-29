@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use lib ".";
+use lib "lib";
 
 use Data::Dumper;
 use BaconBird::Config;
