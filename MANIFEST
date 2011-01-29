@@ -1,0 +1,13 @@
+README
+lib/BaconBird/Controller.pm
+lib/BaconBird/Config.pm
+lib/BaconBird/Model.pm
+lib/BaconBird/KeyMap.pm
+lib/BaconBird/Shortener.pm
+lib/BaconBird/View.pm
+lib/WWW/Shorten/IsGd.pm
+LICENSE
+baconbird
+Makefile.PL
+MANIFEST
+CHANGES
