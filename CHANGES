@@ -1,6 +1,6 @@
 Changes for baconbird:
 
-0.3:
+0.3 (2011-01-29):
 	Added configurability through a configuration file.
 	Added favorites timeline.
 	Added "Open URLs in browser" key.
