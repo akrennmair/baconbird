@@ -48,6 +48,11 @@ has 'keymap' => (
 	isa => 'HashRef',
 );
 
+has 'key_id_map' => (
+	is => 'rw',
+	isa => 'HashRef',
+);
+
 has 'config' => (
 	is => 'rw',
 	isa => 'BaconBird::Config',
@@ -96,6 +101,53 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
 		BaconBird::KeyMap::KEY_ENTER             => { key => "ENTER", internal => 1 },
 	});
+
+	$self->key_id_map({
+		"quit" => BaconBird::KeyMap::KEY_QUIT,
+		"send" => BaconBird::KeyMap::KEY_SEND,
+		"retweet" => BaconBird::KeyMap::KEY_RETWEET,
+		"reply" => BaconBird::KeyMap::KEY_REPLY,
+		"public_reply" => BaconBird::KeyMap::KEY_PUBLICREPLY,
+		"shorten" => BaconBird::KeyMap::KEY_SHORTEN,
+		"home_timeline" => BaconBird::KeyMap::KEY_HOME_TIMELINE,
+		"mentions" => BaconBird::KeyMap::KEY_MENTIONS,
+		"direct_messages" => BaconBird::KeyMap::KEY_DIRECT_MESSAGES,
+		"search_results" => BaconBird::KeyMap::KEY_SEARCH_RESULTS,
+		"user_timeline" => BaconBird::KeyMap::KEY_USER_TIMELINE,
+		"search" => BaconBird::KeyMap::KEY_SEARCH,
+		"show_user" => BaconBird::KeyMap::KEY_SHOW_USER,
+		"toggle_favorite" => BaconBird::KeyMap::KEY_TOGGLE_FAVORITE,
+		"help" => BaconBird::KeyMap::KEY_HELP,
+		"follow" => BaconBird::KeyMap::KEY_FOLLOW,
+		"unfollow" => BaconBird::KeyMap::KEY_UNFOLLOW,
+		"follow_user" => BaconBird::KeyMap::KEY_FOLLOW_USER,
+		"view" => BaconBird::KeyMap::KEY_VIEW,
+		"redraw" => BaconBird::KeyMap::KEY_REDRAW,
+		"open_url" => BaconBird::KeyMap::KEY_OPEN_URL,
+		"favorites" => BaconBird::KeyMap::KEY_FAVORITES,
+		"retweeted_by_me" => BaconBird::KeyMap::KEY_RT_BY_ME,
+		"retweets_of_me" => BaconBird::KeyMap::KEY_RT_OF_ME,
+		"my_timeline" => BaconBird::KeyMap::KEY_MY_TIMELINE,
+		"enter_user" => BaconBird::KeyMap::KEY_ENTER_USER,
+		"enter_highlight" => BaconBird::KeyMap::KEY_ENTER_HIGHLIGHT,
+		"enter_hide" => BaconBird::KeyMap::KEY_ENTER_HIDE,
+		"save_search" => BaconBird::KeyMap::KEY_SAVE_SEARCH,
+		"load_search" => BaconBird::KeyMap::KEY_LOAD_SEARCH,
+		"delete_item" => BaconBird::KeyMap::KEY_DELETE_ITEM,
+		"limit_timeline" => BaconBird::KeyMap::KEY_LIMIT_TIMELINE,
+		"followers" => BaconBird::KeyMap::KEY_FOLLOWERS,
+		"friends" => BaconBird::KeyMap::KEY_FRIENDS,
+		"edit_external" => BaconBird::KeyMap::KEY_EDIT_EXTERNAL,
+	});
+
+	my $keymap_config = $self->config->get_value("keymap");
+
+	foreach my $key (keys %$keymap_config) {
+		my $keyid = $self->key_id_map->{$key};
+		if ($keyid) {
+			$self->keymap->{$keyid}->{key} = $keymap_config->{$key};
+		}
+	}
 }
 
 sub key {
@@ -120,8 +172,16 @@ sub get_help_desc {
 	my $self = shift;
 	my @descs;
 
-	foreach my $v (values %{$self->keymap}) {
-		push(@descs, $v) unless $v->{internal};
+	foreach my $k (keys %{$self->keymap}) {
+		my $v = $self->keymap->{$k};
+		my $configname;
+		foreach my $cn (keys %{$self->key_id_map}) {
+			if ($self->key_id_map->{$cn} == $k) {
+				$configname = $cn;
+				last;
+			}
+		}
+		push(@descs, { key => $v->{key}, desc => $v->{desc}, configname => $configname } ) unless $v->{internal};
 	}
 	@descs = sort { $a->{key} cmp $b->{key} } @descs;
 	return \@descs;

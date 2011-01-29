@@ -1,5 +1,8 @@
 Changes for baconbird:
 
+0.4:
+	Added key map configurability.
+
 0.3 (2011-01-29):
 	Added configurability through a configuration file.
 	Added favorites timeline.

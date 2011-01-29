@@ -1029,7 +1029,7 @@ sub show_help {
 	my $list = "{list";
 
 	foreach my $h (@{$self->ctrl->get_help_desc}) {
-		my $str = sprintf("%s %s %s", $h->{key}, " " x (8 - length($h->{key})), $h->{desc});
+		my $str = sprintf("%s %s %s %s %s", $h->{key}, " " x (8 - length($h->{key})), $h->{configname}, " " x (16 - length($h->{configname})), $h->{desc});
 		$list .= "{list text:" . stfl::quote($str) . "}";
 	}
 
