@@ -49,17 +49,17 @@ Installation
 
 Installing baconbird is as simple as:
 
+	perl Makefile.PL
+	make
 	make install
+
+The first command will generate a Makefile and check BaconBird's dependencies. 
+The second command will prepare BaconBird for installation and generate 
+documentation, while the third command will install BaconBird.
 
 When using "make install", you have the usual parameters "prefix" and "DESTDIR" 
 available to control where your program will be installed and where the 
 installation files will be copied to.
-
-Optionally, you can check whether you have all necessary dependencies 
-installed, by simply running:
-
-	make
-
 
 Contact
 -------
