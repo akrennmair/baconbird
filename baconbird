@@ -279,73 +279,74 @@ C<ESC> or C<n>.
 =head2 Keybindings
 
 These are the default keybindings. You can always type C<?> to display the
-current bindings.
+current bindings. The lower-case identifiers in parentheses beside the keys can 
+be used to customize the key map in the configuration file (see below).
 
 =over 12
 
-=item * C<q>: Quit baconbird.
+=item * C<q> (quit): Quit baconbird.
 
-=item * C<ENTER>: Send a new tweet or direct message.
+=item * C<ENTER> (send): Send a new tweet or direct message.
 
-=item * C<Ctrl-R>: Reteet currently selected tweet.
+=item * C<Ctrl-R> (retweet): Reteet currently selected tweet.
 
-=item * C<r>: Reply to currently selected tweet or direct message.
+=item * C<r> (reply): Reply to currently selected tweet or direct message.
 
-=item * C<R>: Publicly reply to currently selected tweet.
+=item * C<R> (public_reply): Publicly reply to currently selected tweet.
 
-=item * C<Ctrl-O>: Shorten all URLs in the current input field.
+=item * C<Ctrl-O> (shorten): Shorten all URLs in the current input field.
 
-=item * C<1>: Go to home timeline.
+=item * C<1> (home_timeline): Go to home timeline.
 
-=item * C<2>: Go to mentions.
+=item * C<2> (mentions): Go to mentions.
 
-=item * C<3>: Go to direct messages.
+=item * C<3> (direct_messages): Go to direct messages.
 
-=item * C<4>: Go to search results (if search function was used before).
+=item * C<4> (search_results): Go to search results (if search function was used before).
 
-=item * C<5>: Go to user timeline (if show user function was used before).
+=item * C<5> (user_timeline): Go to user timeline (if show user function was used before).
 
-=item * C<6>: Show tweets retweeted by me.
+=item * C<6> (retweeted_by_me): Show tweets retweeted by me.
 
-=item * C<7>: Show my tweets that were retweeted.
+=item * C<7> (retweets_of_me): Show my tweets that were retweeted.
 
-=item * C<8>: Show my tweets.
+=item * C<8> (my_timeline): Show my tweets.
 
-=item * C<V>: Show favorite tweets.
+=item * C<V> (favorites): Show favorite tweets.
 
-=item * C<g>: Go to a given user timeline.
+=item * C<g> (goto_user): Go to a given user timeline.
 
-=item * C</>: Start new search.
+=item * C</> (search): Start new search.
 
-=item * C<u>: Show timeline of currently selected tweet's author.
+=item * C<u> (show_user): Show timeline of currently selected tweet's author.
 
-=item * C<Ctrl-F>: Toggle favorite flag of currently selected tweet.
+=item * C<Ctrl-F> (toggle_favorite): Toggle favorite flag of currently selected tweet.
 
-=item * C<?>: Show help.
+=item * C<?> (help): Show help.
 
-=item * C<F>: Follow author of currently selected tweet.
+=item * C<F> (follow): Follow author of currently selected tweet.
 
-=item * C<U>: Unfollow author of currently selected tweet.
+=item * C<U> (unfollow): Unfollow author of currently selected tweet.
 
-=item * C<f>: Follow a user. You will be asked for the user name.
+=item * C<f> (follow_user): Follow a user. You will be asked for the user name.
 
-=item * C<v>: Toggle detail view of currently selected tweet.
+=item * C<v> (view): Toggle detail view of currently selected tweet.
 
-=item * C<o>: Open URLs in tweet in default browser.
+=item * C<o> (open_url): Open URLs in tweet in default browser.
 
-=item * C<Ctrl-L>: Redraw screen.
+=item * C<Ctrl-L> (redraw): Redraw screen.
 
-=item * C<h>: Enter an expression to highlight. Enter it again to un-highlight.
+=item * C<h> (enter_highlight): Enter an expression to highlight. Enter it again to un-highlight.
 
-=item * C<e>: Enter an expression to hide. Enter it again to show.
+=item * C<e> (enter_hide): Enter an expression to hide. Enter it again to show.
 
-=item * C<s>: Save current sought for expression
+=item * C<s> (save_search): Save current sought for expression
 
-=item * C<l>: Load saved search.
+=item * C<l> (load_search): Load saved search.
 
-=item * C<d>: Delete item.
+=item * C<d> (delete): Delete item.
 
-=item * C<Ctrl-T>: Edit tweet in an external editor.
+=item * C<Ctrl-T> (edit_external): Edit tweet in an external editor.
 
 =back
 
@@ -372,6 +373,47 @@ options are supported:
 		hide "@someuser"               # hides tweets containing "@someuser"
 		hide "quux"                    # hides tweets containing "quux"
 	</filters>
+
+=item * keymap
+
+In this configuration section you can modify the default keybinding by 
+specifying the key that shall be modified (by using the identifier as listed 
+above) and a key or key combination. Regular single alpha-numeric and symbolic 
+keys are written as themselves, the return key is written as ENTER, the Esc key 
+is written as ESC, while key combinations involving the control key are written 
+as "^" plus another key, e.g. "^G" for C<Ctrl-G>.
+
+	<keymap>
+		edit_external ^I               # remaps "edit_external" to Ctrl-I
+	</keymap>
+
+=item * timeline_format
+
+This configuration option makes it possible to specify a custom format in the 
+timeline overview. This is done by specifying a format string similar to printf().
+
+The following format identifiers are available:
+
+=over
+
+=item * %d: creation date/time of the tweet. This format identifier needs an additional strftime(3)-style format string in curly brackets before the d in %d (see below for an example).
+
+=item * %i: position index of the tweet
+
+=item * %F: favorite flag
+
+=item * %R: retweeted flag
+
+=item * %u: user name
+
+=item * %t: tweet text
+
+=back
+
+All these format can be aligned left or right by prepending a positive or negative field size.
+
+	timeline_format = "%F%R[%16u] %t"             # default configuration
+	timeline_format = "%4i %{%H:%M}d [%16u] %t"   # example showing the use of %d
 
 =back
 
