@@ -430,8 +430,11 @@ sub lookup_author {
 	my $self = shift;
 	my ($tweetid) = @_;
 	my $tweet = $self->get_message_by_id($tweetid);
-	return $tweet->{user}{screen_name} if $tweet;
-	return "";
+	my $username;
+	if ($tweet) {
+		$username = $tweet->{user}{screen_name} || $tweet->{from_user};
+	}
+	return $username || "";
 }
 
 sub select_timeline {
