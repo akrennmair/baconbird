@@ -603,10 +603,10 @@ sub toggle_favorite {
 		if (defined($tweet)) {
 			if ($tweet->{favorited}) {
 				$self->nt->destroy_favorite($tweetid);
-				$tweet->{favorited} = JSON::XS::false;
+				$tweet->{favorited} = undef;
 			} else {
 				$self->nt->create_favorite($tweetid);
-				$tweet->{favorited} = JSON::XS::true;
+				$tweet->{favorited} = 1;
 			}
 		}
 	}
