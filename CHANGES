@@ -3,6 +3,7 @@ Changes for baconbird:
 0.4:
 	Added key map configurability.
 	Made timeline format freely configurable with a format string.
+	Added key to edit a tweet before retweeting.
 
 0.3 (2011-01-29):
 	Added configurability through a configuration file.

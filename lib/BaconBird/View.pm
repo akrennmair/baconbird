@@ -613,6 +613,8 @@ sub next_event {
 		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_FOLLOWERS)) {
 			$self->status_msg("Loading users who follow me...");
 			$self->show_followers;
+		} elsif ($e eq $self->ctrl->key(BaconBird::KeyMap::KEY_RT_EDIT)) {
+			$self->do_edit_for_retweet;
 		}
 	}
 }
@@ -1486,6 +1488,21 @@ sub call_external_editor {
 	my @lines = <$fh>;
 	my $newtext = join(" ", map { chomp($_); $_; } @lines);
 	$self->f->set("inputfield", $newtext);
+}
+
+sub do_edit_for_retweet {
+	my $self = shift;
+	if ($self->ctrl->is_direct_message) {
+		die "You can't retweet a direct message.";
+	}
+
+	$self->set_shorthelp(HELP_TWEET);
+
+	my $tweetid = $self->f->get("tweetid");
+	my $tweet = $self->ctrl->get_message_by_id($tweetid);
+	my $username = $self->ctrl->lookup_author($tweetid);
+
+	$self->set_input_field("Tweet: ", 'RT @' . $username . ": " . $tweet->{text});
 }
 
 no Moose;

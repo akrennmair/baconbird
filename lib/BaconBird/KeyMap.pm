@@ -42,6 +42,7 @@ use constant KEY_LIMIT_TIMELINE  => 35;
 use constant KEY_FOLLOWERS       => 36;
 use constant KEY_FRIENDS         => 37;
 use constant KEY_EDIT_EXTERNAL   => 38;
+use constant KEY_RT_EDIT         => 39;
 
 has 'keymap' => (
 	is => 'rw',
@@ -96,6 +97,7 @@ sub BUILD {
 		BaconBird::KeyMap::KEY_FOLLOWERS         => { key => 'E',     desc => 'Show users following me' },
 		BaconBird::KeyMap::KEY_FRIENDS           => { key => 'I',     desc => 'Show users I follow' },
 		BaconBird::KeyMap::KEY_EDIT_EXTERNAL     => { key => '^T',    desc => 'Edit tweet in external editor' },
+		BaconBird::KeyMap::KEY_RT_EDIT           => { key => '^E',    desc => 'Edit and retweet' },
 		BaconBird::KeyMap::KEY_YES               => { key => 'y',     internal => 1 },
 		BaconBird::KeyMap::KEY_NO                => { key => 'n',     internal => 1 },
 		BaconBird::KeyMap::KEY_CANCEL            => { key => "ESC",   internal => 1 },
@@ -138,6 +140,7 @@ sub BUILD {
 		"followers" => BaconBird::KeyMap::KEY_FOLLOWERS,
 		"friends" => BaconBird::KeyMap::KEY_FRIENDS,
 		"edit_external" => BaconBird::KeyMap::KEY_EDIT_EXTERNAL,
+		"edit_retweet" => BaconBird::KeyMap::KEY_RT_EDIT,
 	});
 
 	my $keymap_config = $self->config->get_value("keymap");
