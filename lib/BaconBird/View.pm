@@ -1230,6 +1230,13 @@ sub open_url_in_browser {
 
 	my $browser = $self->config->get_value("browser");
 
+	if (!defined($browser)) {
+		$browser = $ENV{BROWSER};
+		if (!defined($browser)) {
+			$browser = "links %u";
+		}
+	}
+
 	$url =~ s/"/\\"/g;
 	if ($browser =~ /%u/) {
 		$browser =~ s/%u/"$url"/g;

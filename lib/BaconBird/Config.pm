@@ -22,7 +22,7 @@ has 'default_config' => (
 sub BUILD {
 	my $self = shift;
 	$self->default_config({
-			"browser"      => "links %u",
+			"browser"      => undef,
 			"editor"       => undef,
 			"count"        => 50,
 			"timeline_format" => "%F%R[%16u] %t",
