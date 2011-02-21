@@ -7,6 +7,7 @@ use Text::Wrap;
 use URI::Find;
 use File::Temp qw/ :POSIX /;
 use String::Format;
+use autodie qw(system);
 
 use BaconBird::KeyMap;
 use BaconBird::Model;
@@ -929,7 +930,6 @@ sub open_url {
 
 			$self->status_msg("Opening $text in browser...");
 			$self->open_url_in_browser($text);
-			$self->status_msg("Opened $text in browser");
 		};
 
 		my $finder = URI::Find->new($open_url);
@@ -1245,7 +1245,14 @@ sub open_url_in_browser {
 	}
 
 	stfl::reset();
-	system($browser);
+	eval {
+		system($browser);
+	};
+	if ($@) {
+		$self->status_msg("Running '$browser' failed.");
+	} else {
+		$self->status_msg("");
+	}
 }
 
 sub highlight_text {

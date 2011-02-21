@@ -17,5 +17,7 @@ WriteMakefile (
 			'IO::Socket::SSL' => '1.16',
 			'Config::General' => '2.40',
 			'String::Format' => '1.16',
+			'autodie' => '2.10',
+			'IPC::System::Simple' => '1.21',
 	}
 );

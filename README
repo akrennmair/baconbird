@@ -33,6 +33,8 @@ be installed beofre baconbird can be used.
 	* IO::Socket::SSL
 	* Config::General
 	* String::Format
+	* autodie
+	* IPC::System::Simple
 
 Debian squeeze (and later) comes with ready-to-use packages for these 
 dependencies. The required packages are: 
@@ -45,6 +47,8 @@ dependencies. The required packages are:
 - libio-socket-ssl-perl
 - libconfig-general-perl
 - libstring-format-perl
+- libautodie-perl
+- libipc-system-simple-perl
 
 Installation
 ------------
