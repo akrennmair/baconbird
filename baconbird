@@ -369,7 +369,7 @@ options are supported:
 
 	<filters>
 		highlight "foobar"             # highlights all occurences of "foobar"
-		highlight "http?s://[^ ]*"     # highlights all URLs
+		highlight "https?://[^ ]*"     # highlights all URLs
 		hide "@someuser"               # hides tweets containing "@someuser"
 		hide "quux"                    # hides tweets containing "quux"
 	</filters>
