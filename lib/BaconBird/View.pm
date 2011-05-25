@@ -625,7 +625,8 @@ sub prepare {
 
 	my $tweetid = $self->f->get("tweetid");
 
-	if ($self->f->get_focus eq "tweets") {
+	my $focus = $self->f->get_focus;
+	if ($focus && $focus eq "tweets") {
 		$self->update_info_line($tweetid);
 	}
 	$self->update_view($tweetid);
